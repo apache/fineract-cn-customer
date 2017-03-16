@@ -1,0 +1,29 @@
+group 'io.mifos'
+
+task publishApiToMavenLocal {
+    dependsOn gradle.includedBuild('api').task(':publishToMavenLocal')
+}
+
+task publishServiceToMavenLocal {
+    mustRunAfter publishApiToMavenLocal
+    dependsOn gradle.includedBuild('service').task(':publishToMavenLocal')
+}
+
+task publishComponentTestToMavenLocal {
+    mustRunAfter publishApiToMavenLocal
+    mustRunAfter publishServiceToMavenLocal
+    dependsOn gradle.includedBuild('component-test').task(':publishToMavenLocal')
+}
+
+task publishToMavenLocal {
+    group 'all'
+    dependsOn publishApiToMavenLocal
+    dependsOn publishServiceToMavenLocal
+    dependsOn publishComponentTestToMavenLocal
+}
+
+task prepareForTest {
+    group 'all'
+    dependsOn publishToMavenLocal
+    dependsOn gradle.includedBuild('component-test').task(':build')
+}

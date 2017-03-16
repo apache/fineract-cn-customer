@@ -1,0 +1,6 @@
+rootProject.name = 'customer'
+
+includeBuild 'api'
+includeBuild 'service'
+includeBuild 'component-test'
+
