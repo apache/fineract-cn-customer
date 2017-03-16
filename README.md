@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/mifos-initiative/mifos.io](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mifos-initiative/mifos.io?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Ma'at covers simple functionality around CRM and KYC.
+This service covers simple functionality around CRM and KYC.
 
 ## Versioning
 The version numbers follow the [Semantic Versioning](http://semver.org/) scheme.
