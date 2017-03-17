@@ -24,7 +24,7 @@ import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.CustomerClient;
+import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.client.TaskAlreadyExistsException;
 import io.mifos.customer.api.v1.client.TaskNotFoundException;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
@@ -85,7 +85,7 @@ public class TestTaskDefinition {
           = new TenantApplicationSecurityEnvironmentTestRule(testEnvironment, this::waitForInitialize);
 
   @Autowired
-  private CustomerClient customerClient;
+  private CustomerManager customerManager;
 
   @Autowired
   private EventRecorder eventRecorder;
@@ -114,11 +114,11 @@ public class TestTaskDefinition {
   @Test
   public void shouldCreateTask() throws Exception {
     final TaskDefinition taskDefinition = TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE);
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
-    final TaskDefinition savedTaskDefinition = this.customerClient.findTask(taskDefinition.getIdentifier());
+    final TaskDefinition savedTaskDefinition = this.customerManager.findTask(taskDefinition.getIdentifier());
     Assert.assertNotNull(savedTaskDefinition);
     Assert.assertEquals(taskDefinition.getIdentifier(), savedTaskDefinition.getIdentifier());
     Assert.assertEquals(taskDefinition.getType(), savedTaskDefinition.getType());
@@ -132,12 +132,12 @@ public class TestTaskDefinition {
   @Test
   public void shouldNotCreateTaskAlreadyExists() throws Exception {
     final TaskDefinition taskDefinition = TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE);
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
     try {
-      this.customerClient.createTask(taskDefinition);
+      this.customerManager.createTask(taskDefinition);
       Assert.fail();
     } catch (final TaskAlreadyExistsException ex) {
       // do nothing, expected
@@ -147,18 +147,18 @@ public class TestTaskDefinition {
   @Test
   public void shouldFindTask() throws Exception {
     final TaskDefinition taskDefinition = TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE);
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
-    final TaskDefinition savedTaskDefinition = this.customerClient.findTask(taskDefinition.getIdentifier());
+    final TaskDefinition savedTaskDefinition = this.customerManager.findTask(taskDefinition.getIdentifier());
     Assert.assertNotNull(savedTaskDefinition);
   }
 
   @Test
   public void shouldNotFindTaskNotFound() throws Exception {
     try {
-      this.customerClient.findTask(RandomStringUtils.randomAlphanumeric(8));
+      this.customerManager.findTask(RandomStringUtils.randomAlphanumeric(8));
       Assert.fail();
     } catch (TaskNotFoundException ex) {
       // do nothing, expected
@@ -172,7 +172,7 @@ public class TestTaskDefinition {
         TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE),
         TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE)
     ).forEach(taskDefinition -> {
-      this.customerClient.createTask(taskDefinition);
+      this.customerManager.createTask(taskDefinition);
       try {
         this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
       } catch (final InterruptedException ex) {
@@ -180,14 +180,14 @@ public class TestTaskDefinition {
       }
     });
 
-    final List<TaskDefinition> taskDefinitions = this.customerClient.fetchAllTasks();
+    final List<TaskDefinition> taskDefinitions = this.customerManager.fetchAllTasks();
     Assert.assertTrue(taskDefinitions.size() >= 3);
   }
 
   @Test
   public void shouldUpdateTask() throws Exception {
     final TaskDefinition taskDefinition = TaskGenerator.createRandomTask(TaskDefinition.Type.CUSTOM, Boolean.FALSE, Boolean.FALSE);
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
@@ -195,11 +195,11 @@ public class TestTaskDefinition {
     updatedTaskDefinition.setIdentifier(taskDefinition.getIdentifier());
     updatedTaskDefinition.setCommands(TaskDefinition.Command.REOPEN.name());
 
-    this.customerClient.updateTask(updatedTaskDefinition.getIdentifier(), updatedTaskDefinition);
+    this.customerManager.updateTask(updatedTaskDefinition.getIdentifier(), updatedTaskDefinition);
 
     this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, taskDefinition.getIdentifier());
 
-    final TaskDefinition fetchedTaskDefinition = this.customerClient.findTask(updatedTaskDefinition.getIdentifier());
+    final TaskDefinition fetchedTaskDefinition = this.customerManager.findTask(updatedTaskDefinition.getIdentifier());
     Assert.assertNotNull(fetchedTaskDefinition);
     Assert.assertEquals(updatedTaskDefinition.getIdentifier(), fetchedTaskDefinition.getIdentifier());
     Assert.assertEquals(updatedTaskDefinition.getType(), fetchedTaskDefinition.getType());

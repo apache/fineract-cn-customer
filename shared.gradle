@@ -18,8 +18,10 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'io.spring.dependency-management'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
     jcenter()
@@ -47,6 +49,10 @@ dependencies {
     testCompile(
             [group: 'org.springframework.boot', name: 'spring-boot-starter-test']
     )
+}
+
+jar {
+    from sourceSets.main.allSource
 }
 
 license {

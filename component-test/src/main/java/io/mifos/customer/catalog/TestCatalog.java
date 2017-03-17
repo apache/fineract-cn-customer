@@ -24,10 +24,10 @@ import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.CustomerClient;
+import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.catalog.api.v1.CatalogEventConstants;
-import io.mifos.customer.catalog.api.v1.client.CatalogClient;
+import io.mifos.customer.catalog.api.v1.client.CatalogManager;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.api.v1.domain.Field;
 import io.mifos.customer.catalog.api.v1.domain.Value;
@@ -89,9 +89,9 @@ public class TestCatalog {
 
 
   @Autowired
-  private CatalogClient catalogClient;
+  private CatalogManager catalogManager;
   @Autowired
-  private CustomerClient customerClient;
+  private CustomerManager customerManager;
   @Autowired
   private EventRecorder eventRecorder;
 
@@ -124,10 +124,10 @@ public class TestCatalog {
   public void shouldCreateCatalog() throws Exception {
     final Catalog catalog = CatalogGenerator.createRandomCatalog();
 
-    this.catalogClient.createCatalog(catalog);
+    this.catalogManager.createCatalog(catalog);
     this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
 
-    final Catalog savedCatalog = this.catalogClient.findCatalog(catalog.getIdentifier());
+    final Catalog savedCatalog = this.catalogManager.findCatalog(catalog.getIdentifier());
     Assert.assertEquals(catalog.getIdentifier(), savedCatalog.getIdentifier());
     Assert.assertEquals(catalog.getName(), savedCatalog.getName());
     Assert.assertEquals(catalog.getDescription(), savedCatalog.getDescription());
@@ -154,7 +154,7 @@ public class TestCatalog {
         CatalogGenerator.createRandomCatalog());
 
     catalogs.forEach(catalog -> {
-      this.catalogClient.createCatalog(catalog);
+      this.catalogManager.createCatalog(catalog);
       try {
         this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
       } catch (InterruptedException e) {
@@ -162,7 +162,7 @@ public class TestCatalog {
       }
     });
 
-    final List<Catalog> fetchedCatalogs = this.catalogClient.fetchCatalogs();
+    final List<Catalog> fetchedCatalogs = this.catalogManager.fetchCatalogs();
     Assert.assertTrue(fetchedCatalogs.size() >= 3);
   }
 
@@ -170,7 +170,7 @@ public class TestCatalog {
   public void shouldSaveCustomValues() throws Exception {
     final Catalog randomCatalog = CatalogGenerator.createRandomCatalog();
 
-    this.catalogClient.createCatalog(randomCatalog);
+    this.catalogManager.createCatalog(randomCatalog);
     this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, randomCatalog.getIdentifier());
 
     final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
@@ -192,10 +192,10 @@ public class TestCatalog {
         .collect(Collectors.toList())
     );
 
-    this.customerClient.createCustomer(randomCustomer);
+    this.customerManager.createCustomer(randomCustomer);
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
 
-    final Customer savedCustomer = this.customerClient.findCustomer(randomCustomer.getIdentifier());
+    final Customer savedCustomer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
     Assert.assertTrue(savedCustomer.getCustomValues().size() == 2);
   }
 }

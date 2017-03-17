@@ -25,7 +25,7 @@ import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
-import io.mifos.customer.api.v1.client.CustomerClient;
+import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.client.CustomerNotFoundException;
 import io.mifos.customer.api.v1.client.CustomerValidationException;
 import io.mifos.customer.api.v1.domain.Address;
@@ -97,7 +97,7 @@ public class TestCustomer {
           = new TenantApplicationSecurityEnvironmentTestRule(testEnvironment, this::waitForInitialize);
 
   @Autowired
-  private CustomerClient customerClient;
+  private CustomerManager customerManager;
 
   @Autowired
   private EventRecorder eventRecorder;
@@ -129,23 +129,23 @@ public class TestCustomer {
   @Test
   public void shouldCreateCustomer() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    final Customer createdCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer createdCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(createdCustomer);
   }
 
   @Test
   public void shouldNotCreateCustomerAlreadyExists() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     try {
-      this.customerClient.createCustomer(customer);
+      this.customerManager.createCustomer(customer);
       Assert.fail();
     } catch (final CustomerAlreadyExistsException ex) {
       // do nothing, expected
@@ -159,7 +159,7 @@ public class TestCustomer {
     customer.setContactDetails(null);
 
     try {
-      this.customerClient.createCustomer(customer);
+      this.customerManager.createCustomer(customer);
       Assert.fail();
     } catch (final CustomerValidationException ex) {
       // do nothing, expected
@@ -169,11 +169,11 @@ public class TestCustomer {
   @Test
   public void shouldFindCustomer() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    final Customer foundCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer foundCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(foundCustomer);
     Assert.assertNotNull(foundCustomer.getIdentificationCard());
     Assert.assertNotNull(foundCustomer.getAddress());
@@ -184,7 +184,7 @@ public class TestCustomer {
   @Test
   public void shouldNotFindCustomerNotFound() throws Exception {
     try {
-      this.customerClient.findCustomer(RandomStringUtils.randomAlphanumeric(8));
+      this.customerManager.findCustomer(RandomStringUtils.randomAlphanumeric(8));
       Assert.fail();
     } catch (final CustomerNotFoundException ex) {
       // do nothing, expected
@@ -198,7 +198,7 @@ public class TestCustomer {
         CustomerGenerator.createRandomCustomer(),
         CustomerGenerator.createRandomCustomer()
     ).forEach(customer -> {
-      this.customerClient.createCustomer(customer);
+      this.customerManager.createCustomer(customer);
       try {
         this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
       } catch (final InterruptedException ex) {
@@ -206,7 +206,7 @@ public class TestCustomer {
       }
     });
 
-    final CustomerPage customerPage = this.customerClient.fetchCustomers(null, null, 0, 20, null, null);
+    final CustomerPage customerPage = this.customerManager.fetchCustomers(null, null, 0, 20, null, null);
     Assert.assertTrue(customerPage.getTotalElements() >= 3);
   }
 
@@ -215,34 +215,34 @@ public class TestCustomer {
   public void shouldFetchCustomersByTerm() throws Exception {
     final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
     final String randomCustomerIdentifier = randomCustomer.getIdentifier();
-    this.customerClient.createCustomer(randomCustomer);
+    this.customerManager.createCustomer(randomCustomer);
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomerIdentifier);
 
-    final CustomerPage customerPage = this.customerClient.fetchCustomers(randomCustomerIdentifier, Boolean.FALSE, 0, 20, null, null);
+    final CustomerPage customerPage = this.customerManager.fetchCustomers(randomCustomerIdentifier, Boolean.FALSE, 0, 20, null, null);
     Assert.assertTrue(customerPage.getTotalElements() == 1);
   }
 
   @Test
   public void shouldUpdateCustomer() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     customer.setSurname(RandomStringUtils.randomAlphanumeric(256));
 
-    this.customerClient.updateCustomer(customer.getIdentifier(), customer);
+    this.customerManager.updateCustomer(customer.getIdentifier(), customer);
 
     this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, customer.getIdentifier());
 
-    final Customer updatedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer updatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(customer.getSurname(), updatedCustomer.getSurname());
   }
 
   @Test
   public void shouldNotUpdateCustomerNotFound() throws Exception {
     try {
-      this.customerClient.updateCustomer(RandomStringUtils.randomAlphanumeric(8), CustomerGenerator.createRandomCustomer());
+      this.customerManager.updateCustomer(RandomStringUtils.randomAlphanumeric(8), CustomerGenerator.createRandomCustomer());
       Assert.fail();
     } catch (final CustomerNotFoundException ex) {
       // do nothing, expected
@@ -252,118 +252,118 @@ public class TestCustomer {
   @Test
   public void shouldActivateClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    final Customer activatedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer activatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), activatedCustomer.getCurrentState());
   }
 
   @Test
   public void shouldLockClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, customer.getIdentifier());
 
-    final Customer lockedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer lockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.LOCKED.name(), lockedCustomer.getCurrentState());
   }
 
   @Test
   public void shouldUnlockClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.UNLOCK, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.UNLOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.UNLOCK_CUSTOMER, customer.getIdentifier());
 
-    final Customer unlockedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer unlockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), unlockedCustomer.getCurrentState());
   }
 
   @Test
   public void shouldCloseClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.CLOSE_CUSTOMER, customer.getIdentifier());
 
-    final Customer closedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer closedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.CLOSED.name(), closedCustomer.getCurrentState());
   }
 
   @Test
   public void shouldReopenClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.CLOSE_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.REOPEN, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.REOPEN, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.REOPEN_CUSTOMER, customer.getIdentifier());
 
-    final Customer reopenedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer reopenedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), reopenedCustomer.getCurrentState());
   }
 
   @Test
   public void shouldFetchCommands() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
-    this.customerClient.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
-    final List<Command> commands = this.customerClient.fetchCustomerCommands(customer.getIdentifier());
+    final List<Command> commands = this.customerManager.fetchCustomerCommands(customer.getIdentifier());
     Assert.assertTrue(commands.size() == 1);
   }
 
   @Test
   public void shouldUpdateAddress() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     final Address address = AddressGenerator.createRandomAddress();
-    this.customerClient.putAddress(customer.getIdentifier(), address);
+    this.customerManager.putAddress(customer.getIdentifier(), address);
 
     this.eventRecorder.wait(CustomerEventConstants.PUT_ADDRESS, customer.getIdentifier());
 
-    final Customer changedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer changedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     final Address changedAddress = changedCustomer.getAddress();
 
     Assert.assertEquals(address.getCity(), changedAddress.getCity());
@@ -377,16 +377,16 @@ public class TestCustomer {
   @Test
   public void shouldUpdateContactDetails() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     final ContactDetail contactDetail = ContactDetailGenerator.createRandomContactDetail();
-    this.customerClient.putContactDetails(customer.getIdentifier(), Collections.singletonList(contactDetail));
+    this.customerManager.putContactDetails(customer.getIdentifier(), Collections.singletonList(contactDetail));
 
     this.eventRecorder.wait(CustomerEventConstants.PUT_CONTACT_DETAILS, customer.getIdentifier());
 
-    final Customer changedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer changedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     final List<ContactDetail> changedContactDetails = changedCustomer.getContactDetails();
     Assert.assertEquals(1, changedContactDetails.size());
     final ContactDetail changedContactDetail = changedContactDetails.get(0);
@@ -400,16 +400,16 @@ public class TestCustomer {
   @Test
   public void shouldUpdateIdentificationCard() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(customer);
+    this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     final IdentificationCard newIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-    this.customerClient.putIdentificationCard(customer.getIdentifier(), newIdentificationCard);
+    this.customerManager.putIdentificationCard(customer.getIdentifier(), newIdentificationCard);
 
     this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, customer.getIdentifier());
 
-    final Customer changedCustomer = this.customerClient.findCustomer(customer.getIdentifier());
+    final Customer changedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     final IdentificationCard changedIdentificationCard = changedCustomer.getIdentificationCard();
     Assert.assertNotNull(changedIdentificationCard);
     Assert.assertEquals(newIdentificationCard.getType(), changedIdentificationCard.getType());

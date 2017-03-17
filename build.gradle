@@ -27,3 +27,10 @@ task prepareForTest {
     dependsOn publishToMavenLocal
     dependsOn gradle.includedBuild('component-test').task(':build')
 }
+
+task licenseFormat {
+    group 'all'
+    dependsOn gradle.includedBuild('api').task(':licenseFormat')
+    dependsOn gradle.includedBuild('service').task(':licenseFormat')
+    dependsOn gradle.includedBuild('component-test').task(':licenseFormat')
+}

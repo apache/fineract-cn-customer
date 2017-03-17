@@ -24,7 +24,7 @@ import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.CustomerClient;
+import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.client.TaskExecutionException;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
@@ -85,7 +85,7 @@ public class TestTaskInstance {
           = new TenantApplicationSecurityEnvironmentTestRule(testEnvironment, this::waitForInitialize);
 
   @Autowired
-  private CustomerClient customerClient;
+  private CustomerManager customerManager;
 
   @Autowired
   private EventRecorder eventRecorder;
@@ -127,52 +127,52 @@ public class TestTaskInstance {
     taskDefinition.setPredefined(Boolean.TRUE);
     taskDefinition.setMandatory(Boolean.TRUE);
 
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
     // create a random customer
     final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
     randomCustomer.setIdentificationCard(null);
-    this.customerClient.createCustomer(randomCustomer);
+    this.customerManager.createCustomer(randomCustomer);
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
 
     // try to activate the customer with missing ID card
     final Command activateCustomer = new Command();
     activateCustomer.setAction(Command.Action.ACTIVATE.name());
-    this.customerClient.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
+    this.customerManager.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
     Assert.assertFalse(this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, randomCustomer.getIdentifier()));
 
     // assert client is still in pending
-    final Customer stillPendingCustomer = this.customerClient.findCustomer(randomCustomer.getIdentifier());
+    final Customer stillPendingCustomer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
     Assert.assertEquals(Customer.State.PENDING.name(), stillPendingCustomer.getCurrentState());
 
     try {
       // try to close the task
-      this.customerClient.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());
+      this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());
       Assert.fail();
     } catch (final TaskExecutionException ex) {
       // do nothing, expected
     }
 
     // set the ID card for the customer
-    this.customerClient.putIdentificationCard(randomCustomer.getIdentifier(), IdentificationCardGenerator.createRandomIdentificationCard());
+    this.customerManager.putIdentificationCard(randomCustomer.getIdentifier(), IdentificationCardGenerator.createRandomIdentificationCard());
     this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, randomCustomer.getIdentifier());
 
     // close the task
-    this.customerClient.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());
     this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
 
     // try to activate customer
-    this.customerClient.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
+    this.customerManager.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, randomCustomer.getIdentifier());
 
     // assert customer is now active
-    final Customer activatedCustomer = this.customerClient.findCustomer(randomCustomer.getIdentifier());
+    final Customer activatedCustomer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), activatedCustomer.getCurrentState());
 
     // set predefined to false so it does not have a side effect on other tests
     taskDefinition.setPredefined(false);
-    this.customerClient.updateTask(taskDefinition.getIdentifier(), taskDefinition);
+    this.customerManager.updateTask(taskDefinition.getIdentifier(), taskDefinition);
     this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, taskDefinition.getIdentifier());
   }
 
@@ -190,15 +190,15 @@ public class TestTaskInstance {
     taskDefinition.setPredefined(Boolean.TRUE);
     taskDefinition.setMandatory(Boolean.FALSE);
 
-    this.customerClient.createTask(taskDefinition);
+    this.customerManager.createTask(taskDefinition);
     this.eventRecorder.wait(CustomerEventConstants.POST_TASK, taskDefinition.getIdentifier());
 
     // create a random customer
     final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
-    this.customerClient.createCustomer(randomCustomer);
+    this.customerManager.createCustomer(randomCustomer);
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
 
-    final List<TaskDefinition> tasksForCustomer = this.customerClient.findTasksForCustomer(randomCustomer.getIdentifier(), false);
+    final List<TaskDefinition> tasksForCustomer = this.customerManager.findTasksForCustomer(randomCustomer.getIdentifier(), false);
 
     Assert.assertEquals(1, tasksForCustomer.size());
   }

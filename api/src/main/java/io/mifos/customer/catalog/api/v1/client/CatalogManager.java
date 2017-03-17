@@ -31,7 +31,7 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 @FeignClient(name="customer-v1", path="/customer/v1", configuration=CustomFeignClientsConfiguration.class)
-public interface CatalogClient {
+public interface CatalogManager {
 
   @RequestMapping(
       path = "/catalogs",
