@@ -123,4 +123,22 @@ public class CustomerEventListener {
                                              final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.PUT_IDENTIFICATION_CARD, payload, String.class);
   }
+
+  @JmsListener(
+          destination = CustomerEventConstants.DESTINATION,
+          selector = CustomerEventConstants.SELECTOR_PUT_PORTRAIT
+  )
+  public void portraitPutEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                                             final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.PUT_PORTRAIT, payload, String.class);
+  }
+
+  @JmsListener(
+          destination = CustomerEventConstants.DESTINATION,
+          selector = CustomerEventConstants.SELECTOR_DELETE_PORTRAIT
+  )
+  public void portraitDeleteEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                               final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_PORTRAIT, payload, String.class);
+  }
 }

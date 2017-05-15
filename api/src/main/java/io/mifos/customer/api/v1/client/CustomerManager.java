@@ -18,6 +18,7 @@ package io.mifos.customer.api.v1.client;
 import io.mifos.core.api.annotation.ThrowsException;
 import io.mifos.core.api.annotation.ThrowsExceptions;
 import io.mifos.core.api.util.CustomFeignClientsConfiguration;
+import io.mifos.customer.api.v1.config.CustomerFeignClientConfig;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.ContactDetail;
@@ -33,11 +34,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @SuppressWarnings("unused")
-@FeignClient(name="customer-v1", path="/customer/v1", configuration=CustomFeignClientsConfiguration.class)
+@FeignClient(name="customer-v1", path="/customer/v1", configuration= CustomerFeignClientConfig.class)
 public interface CustomerManager {
 
   @RequestMapping(
@@ -181,6 +183,37 @@ public interface CustomerManager {
   })
   void putIdentificationCard(@PathVariable("identifier") final String identifier,
                              @RequestBody final IdentificationCard identificationCard);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/portrait",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = PortraitNotFoundException.class),
+  })
+  byte[] getPortrait(@PathVariable("identifier") final String identifier);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/portrait",
+          method = RequestMethod.PUT,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = PortraitValidationException.class),
+  })
+  void putPortrait(@PathVariable("identifier") final String identifier,
+                   @RequestBody final MultipartFile portrait);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/portrait",
+          method = RequestMethod.DELETE,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  void deletePortrait(@PathVariable("identifier") final String identifier);
 
   @RequestMapping(
       value = "/tasks",

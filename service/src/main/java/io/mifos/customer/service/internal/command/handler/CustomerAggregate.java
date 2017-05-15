@@ -29,34 +29,13 @@ import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
-import io.mifos.customer.service.internal.command.ActivateCustomerCommand;
-import io.mifos.customer.service.internal.command.CloseCustomerCommand;
-import io.mifos.customer.service.internal.command.CreateCustomerCommand;
-import io.mifos.customer.service.internal.command.LockCustomerCommand;
-import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
-import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateAddressCommand;
-import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
-import io.mifos.customer.service.internal.command.UpdateCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateIdentificationCardCommand;
-import io.mifos.customer.service.internal.mapper.AddressMapper;
-import io.mifos.customer.service.internal.mapper.CommandMapper;
-import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
-import io.mifos.customer.service.internal.mapper.CustomerMapper;
-import io.mifos.customer.service.internal.mapper.FieldValueMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.repository.AddressEntity;
-import io.mifos.customer.service.internal.repository.AddressRepository;
-import io.mifos.customer.service.internal.repository.CommandRepository;
-import io.mifos.customer.service.internal.repository.ContactDetailEntity;
-import io.mifos.customer.service.internal.repository.ContactDetailRepository;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.CustomerRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
+import io.mifos.customer.service.internal.command.*;
+import io.mifos.customer.service.internal.mapper.*;
+import io.mifos.customer.service.internal.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -72,6 +51,7 @@ public class CustomerAggregate {
   private final AddressRepository addressRepository;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
+  private final PortraitRepository portraitRepository;
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
   private final CatalogRepository catalogRepository;
@@ -83,6 +63,7 @@ public class CustomerAggregate {
   public CustomerAggregate(final AddressRepository addressRepository,
                            final CustomerRepository customerRepository,
                            final IdentificationCardRepository identificationCardRepository,
+                           final PortraitRepository portraitRepository,
                            final ContactDetailRepository contactDetailRepository,
                            final FieldValueRepository fieldValueRepository,
                            final CatalogRepository catalogRepository,
@@ -93,6 +74,7 @@ public class CustomerAggregate {
     this.addressRepository = addressRepository;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
+    this.portraitRepository = portraitRepository;
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
     this.catalogRepository = catalogRepository;
@@ -362,6 +344,44 @@ public class CustomerAggregate {
     }
 
     return updateIdentificationCardCommand.identifier();
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_PORTRAIT)
+  public String createPortrait(final CreatePortraitCommand createPortraitCommand) throws IOException {
+    if(createPortraitCommand.portrait() == null) {
+      return null;
+    }
+
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(createPortraitCommand.identifier());
+
+    final PortraitEntity portraitEntity = PortraitMapper.map(createPortraitCommand.portrait());
+    portraitEntity.setCustomer(customerEntity);
+    this.portraitRepository.save(portraitEntity);
+
+    customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+    customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
+    this.customerRepository.save(customerEntity);
+
+    return createPortraitCommand.identifier();
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.DELETE_PORTRAIT)
+  public String deletePortrait(final DeletePortraitCommand deletePortraitCommand) throws IOException {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(deletePortraitCommand.identifier());
+
+    this.portraitRepository.deleteByCustomer(customerEntity);
+
+    customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+    customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
+    this.customerRepository.save(customerEntity);
+
+    return deletePortraitCommand.identifier();
   }
 
   private void setCustomValues(final Customer customer, final CustomerEntity savedCustomerEntity) {

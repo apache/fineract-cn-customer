@@ -24,22 +24,10 @@ import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
-import io.mifos.customer.api.v1.client.CustomerManager;
-import io.mifos.customer.api.v1.client.CustomerNotFoundException;
-import io.mifos.customer.api.v1.client.CustomerValidationException;
-import io.mifos.customer.api.v1.domain.Address;
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.ContactDetail;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.client.*;
+import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
-import io.mifos.customer.util.AddressGenerator;
-import io.mifos.customer.util.CommandGenerator;
-import io.mifos.customer.util.ContactDetailGenerator;
-import io.mifos.customer.util.CustomerGenerator;
-import io.mifos.customer.util.IdentificationCardGenerator;
+import io.mifos.customer.util.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.*;
 import org.junit.rules.RuleChain;
@@ -52,6 +40,8 @@ import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
@@ -415,5 +405,86 @@ public class TestCustomer {
     Assert.assertEquals(newIdentificationCard.getType(), changedIdentificationCard.getType());
     Assert.assertEquals(newIdentificationCard.getIssuer(), changedIdentificationCard.getIssuer());
     Assert.assertEquals(newIdentificationCard.getNumber(), changedIdentificationCard.getNumber());
+  }
+
+  @Test
+  public void shouldUploadPortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    this.customerManager.findCustomer(customer.getIdentifier());
+
+    final MockMultipartFile file = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), file);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
+
+    Assert.assertArrayEquals(file.getBytes(), portrait);
+  }
+
+  @Test
+  public void shouldReplacePortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    this.eventRecorder.clear();
+
+    final MockMultipartFile secondFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i do care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), secondFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    final byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
+
+    Assert.assertArrayEquals(secondFile.getBytes(), portrait);
+  }
+
+  @Test(expected = PortraitValidationException.class)
+  public void shouldThrowIfPortraitExceedsMaxSize() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, RandomStringUtils.randomAlphanumeric(750000).getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+  }
+
+  @Test(expected = PortraitNotFoundException.class)
+  public void shouldDeletePortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    this.customerManager.deletePortrait(customer.getIdentifier());
+
+    this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier());
+
+    this.customerManager.getPortrait(customer.getIdentifier());
   }
 }

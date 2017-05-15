@@ -39,6 +39,9 @@ public interface CustomerEventConstants {
   String POST_TASK = "post-task";
   String PUT_TASK = "put-task";
 
+  String PUT_PORTRAIT = "put-portrait";
+  String DELETE_PORTRAIT = "delete-portrait";
+
   String SELECTOR_INITIALIZE = SELECTOR_NAME + " = '" + INITIALIZE + "'";
 
   String SELECTOR_POST_CUSTOMER = SELECTOR_NAME + " = '" + POST_CUSTOMER + "'";
@@ -55,4 +58,7 @@ public interface CustomerEventConstants {
 
   String SELECTOR_POST_TASK = SELECTOR_NAME + " = '" + POST_TASK + "'";
   String SELECTOR_PUT_TASK = SELECTOR_NAME + " = '" + PUT_TASK + "'";
+
+  String SELECTOR_PUT_PORTRAIT = SELECTOR_NAME + " = '" + PUT_PORTRAIT + "'";
+  String SELECTOR_DELETE_PORTRAIT = SELECTOR_NAME + " = '" + DELETE_PORTRAIT + "'";
 }

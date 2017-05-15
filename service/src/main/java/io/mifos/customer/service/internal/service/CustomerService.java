@@ -27,14 +27,7 @@ import io.mifos.customer.service.internal.mapper.CommandMapper;
 import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
 import io.mifos.customer.service.internal.mapper.CustomerMapper;
 import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.repository.CommandEntity;
-import io.mifos.customer.service.internal.repository.CommandRepository;
-import io.mifos.customer.service.internal.repository.ContactDetailEntity;
-import io.mifos.customer.service.internal.repository.ContactDetailRepository;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.CustomerRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
+import io.mifos.customer.service.internal.repository.*;
 import io.mifos.customer.service.internal.mapper.AddressMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +48,7 @@ public class CustomerService {
   private final Logger logger;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
+  private final PortraitRepository portraitRepository;
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
   private final CommandRepository commandRepository;
@@ -63,6 +57,7 @@ public class CustomerService {
   public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
                          final CustomerRepository customerRepository,
                          final IdentificationCardRepository identificationCardRepository,
+                         final PortraitRepository portraitRepository,
                          final ContactDetailRepository contactDetailRepository,
                          final FieldValueRepository fieldValueRepository,
                          final CommandRepository commandRepository) {
@@ -70,6 +65,7 @@ public class CustomerService {
     this.logger = logger;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
+    this.portraitRepository = portraitRepository;
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
     this.commandRepository = commandRepository;
@@ -77,6 +73,10 @@ public class CustomerService {
 
   public Boolean customerExists(final String identifier) {
     return this.customerRepository.existsByIdentifier(identifier);
+  }
+
+  public Boolean portraitExists(final String identifier) {
+    return this.portraitRepository.existsByIdentifier(identifier);
   }
 
   public Optional<Customer> findCustomer(final String identifier) {
@@ -158,5 +158,11 @@ public class CustomerService {
     } else {
       return Collections.emptyList();
     }
+  }
+
+  public final PortraitEntity findPortrait(final String identifier) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
+
+    return this.portraitRepository.findByCustomer(customerEntity);
   }
 }

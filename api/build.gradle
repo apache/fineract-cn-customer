@@ -18,7 +18,9 @@ dependencies {
     compile(
             [group: 'org.springframework.cloud', name: 'spring-cloud-starter-feign'],
             [group: 'io.mifos.core', name: 'api', version: versions.frameworkapi],
-            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator]
+            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator],
+            [group: 'io.github.openfeign.form', name: 'feign-form', version: '2.1.0'],
+            [group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '2.1.0']
     )
 }
 
