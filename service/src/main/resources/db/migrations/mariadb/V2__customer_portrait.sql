@@ -13,9 +13,6 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- CONSTRAINT maat_id_portraits_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT
-
-
 CREATE TABLE maat_portraits (
   id BIGINT NOT NULL AUTO_INCREMENT,
   customer_id BIGINT NOT NULL,
@@ -26,6 +23,7 @@ CREATE TABLE maat_portraits (
   CONSTRAINT maat_id_portraits_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT
 );
 
--- ALTER TABLE maat_customers ADD COLUMN portrait_id BIGINT NULL;
-
--- ALTER TABLE maat_customers ADD CONSTRAINT maat_customers_portraits_fk FOREIGN KEY (portrait_id) REFERENCES maat_portraits (id);
+ALTER TABLE maat_identification_cards ADD created_by VARCHAR(32) NULL;
+ALTER TABLE maat_identification_cards ADD created_on TIMESTAMP(3) NULL;
+ALTER TABLE maat_identification_cards ADD last_modified_by VARCHAR(32) NULL;
+ALTER TABLE maat_identification_cards ADD last_modified_on TIMESTAMP(3) NULL;

@@ -96,12 +96,6 @@ public class CustomerAggregate {
     customerEntity.setAddress(savedAddress);
     final CustomerEntity savedCustomerEntity = this.customerRepository.save(customerEntity);
 
-    if (customer.getIdentificationCard() != null) {
-      final IdentificationCardEntity identificationCardEntity = IdentificationCardMapper.map(customer.getIdentificationCard());
-      identificationCardEntity.setCustomer(savedCustomerEntity);
-      this.identificationCardRepository.save(identificationCardEntity);
-    }
-
     if (customer.getContactDetails() != null) {
       this.contactDetailRepository.save(
           customer.getContactDetails()
@@ -325,25 +319,73 @@ public class CustomerAggregate {
 
   @Transactional
   @CommandHandler
-  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_IDENTIFICATION_CARD)
-  public String updateIdentificationCard(final UpdateIdentificationCardCommand updateIdentificationCardCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(updateIdentificationCardCommand.identifier());
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_IDENTIFICATION_CARD)
+  public String createIdentificationCard(final CreateIdentificationCardCommand createIdentificationCardCommand) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(createIdentificationCardCommand.identifier());
+
+    final IdentificationCardEntity identificationCardEntity = IdentificationCardMapper.map(createIdentificationCardCommand.identificationCard());
+
+    identificationCardEntity.setCustomer(customerEntity);
+    identificationCardEntity.setCreatedBy(UserContextHolder.checkedGetUser());
+    identificationCardEntity.setCreatedOn(LocalDateTime.now(Clock.systemUTC()));
+
+    this.identificationCardRepository.save(identificationCardEntity);
+
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
-    final IdentificationCardEntity oldIdentificationCard = this.identificationCardRepository.findByCustomer(customerEntity);
-    if (oldIdentificationCard != null) {
-      this.identificationCardRepository.delete(oldIdentificationCard);
-    }
+    this.customerRepository.save(customerEntity);
 
-    if (updateIdentificationCardCommand.identificationCard() != null) {
-      final IdentificationCardEntity identificationCardEntity = IdentificationCardMapper.map(
-          updateIdentificationCardCommand.identificationCard());
-      identificationCardEntity.setCustomer(customerEntity);
+    return identificationCardEntity.getNumber();
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_IDENTIFICATION_CARD)
+  public String updateIdentificationCard(final UpdateIdentificationCardCommand updateIdentificationCardCommand) {
+    final Optional<IdentificationCardEntity> optionalIdentificationCardEntity = this.identificationCardRepository.findByNumber(updateIdentificationCardCommand.number());
+
+    final IdentificationCardEntity identificationCard = IdentificationCardMapper.map(updateIdentificationCardCommand.identificationCard());
+
+    optionalIdentificationCardEntity.ifPresent(identificationCardEntity -> {
+      identificationCardEntity.setIssuer(identificationCard.getIssuer());
+      identificationCardEntity.setType(identificationCard.getType());
+      identificationCardEntity.setExpirationDate(identificationCard.getExpirationDate());
+      identificationCardEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+      identificationCardEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
       this.identificationCardRepository.save(identificationCardEntity);
-    }
 
-    return updateIdentificationCardCommand.identifier();
+      final CustomerEntity customerEntity = identificationCardEntity.getCustomer();
+
+      customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+      customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
+      this.customerRepository.save(customerEntity);
+    });
+
+    return updateIdentificationCardCommand.number();
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.DELETE_IDENTIFICATION_CARD)
+  public String deleteIdentificationCard(final DeleteIdentificationCardCommand deleteIdentificationCardCommand) throws IOException {
+    final Optional<IdentificationCardEntity> optionalIdentificationCardEntity = this.identificationCardRepository.findByNumber(deleteIdentificationCardCommand.number());
+
+    optionalIdentificationCardEntity.ifPresent(identificationCardEntity -> {
+
+      this.identificationCardRepository.delete(identificationCardEntity);
+
+      final CustomerEntity customerEntity = identificationCardEntity.getCustomer();
+
+      customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+      customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
+      this.customerRepository.save(customerEntity);
+    });
+
+    return deleteIdentificationCardCommand.number();
   }
 
   @Transactional

@@ -172,17 +172,64 @@ public interface CustomerManager {
                          @RequestBody final List<ContactDetail> contactDetails);
 
   @RequestMapping(
-      value = "/customers/{identifier}/identification",
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
+  })
+  List<IdentificationCard> fetchIdentificationCards(@PathVariable("identifier") final String identifier);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsException(status = HttpStatus.NOT_FOUND, exception = IdentificationCardNotFoundException.class)
+  IdentificationCard findIdentificationCard(@PathVariable("identifier") final String identifier,
+                                            @PathVariable("number") final String number);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = IdentificationCardValidationException.class)
+  })
+  void createIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @RequestBody final IdentificationCard identificationCard);
+
+  @RequestMapping(
+      value = "/customers/{identifier}/identifications/{number}",
       method = RequestMethod.PUT,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
   @ThrowsExceptions({
-      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
-      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = ContactDetailValidationException.class)
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = IdentificationCardNotFoundException.class),
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = IdentificationCardValidationException.class)
   })
-  void putIdentificationCard(@PathVariable("identifier") final String identifier,
-                             @RequestBody final IdentificationCard identificationCard);
+  void updateIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @PathVariable("number") final String number,
+                                @RequestBody final IdentificationCard identificationCard);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.DELETE,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
+  })
+  void deleteIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @PathVariable("number") final String number);
 
   @RequestMapping(
           value = "/customers/{identifier}/portrait",

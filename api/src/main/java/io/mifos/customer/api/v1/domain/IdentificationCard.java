@@ -30,6 +30,10 @@ public class IdentificationCard {
   @Valid
   private ExpirationDate expirationDate;
   private String issuer;
+  private String createdBy;
+  private String createdOn;
+  private String lastModifiedBy;
+  private String lastModifiedOn;
 
   public IdentificationCard() {
     super();
@@ -65,5 +69,37 @@ public class IdentificationCard {
 
   public void setIssuer(final String issuer) {
     this.issuer = issuer;
+  }
+
+  public String getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+  }
+
+  public String getCreatedOn() {
+    return createdOn;
+  }
+
+  public void setCreatedOn(String createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  public String getLastModifiedBy() {
+    return lastModifiedBy;
+  }
+
+  public void setLastModifiedBy(String lastModifiedBy) {
+    this.lastModifiedBy = lastModifiedBy;
+  }
+
+  public String getLastModifiedOn() {
+    return lastModifiedOn;
+  }
+
+  public void setLastModifiedOn(String lastModifiedOn) {
+    this.lastModifiedOn = lastModifiedOn;
   }
 }

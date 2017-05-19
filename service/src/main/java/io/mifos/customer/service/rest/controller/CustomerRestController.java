@@ -295,9 +295,9 @@ public class CustomerRestController {
         final Customer customer;
         switch (TaskDefinition.Type.valueOf(taskDefinition.getType())) {
           case ID_CARD:
-            customer = this.customerService.findCustomer(identifier).get();
-            if (customer.getIdentificationCard() == null) {
-              throw ServiceException.conflict("No identification card for customer found.");
+            final List<IdentificationCard> identificationCards = this.customerService.fetchIdentificationCardsByCustomer(identifier);
+            if (identificationCards.isEmpty()) {
+              throw ServiceException.conflict("No identification cards for customer found.");
             }
             break;
           case FOUR_EYES:
@@ -375,20 +375,100 @@ public class CustomerRestController {
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
   @RequestMapping(
-      value = "/customers/{identifier}/identification",
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public @ResponseBody ResponseEntity<List<IdentificationCard>> fetchIdentificationCards(@PathVariable("identifier") final String identifier) {
+    this.throwIfCustomerNotExists(identifier);
+    return ResponseEntity.ok(this.customerService.fetchIdentificationCardsByCustomer(identifier));
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<IdentificationCard> findIdentificationCard(@PathVariable("identifier") final String identifier,
+                                            @PathVariable("number") final String number) {
+    this.throwIfCustomerNotExists(identifier);
+
+    final Optional<IdentificationCard> identificationCard = this.customerService.findIdentificationCard(number);
+    if (identificationCard.isPresent()) {
+      return ResponseEntity.ok(identificationCard.get());
+    } else {
+      throw ServiceException.notFound("Identification card {0} not found.", number);
+    }
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> createIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @RequestBody @Valid final IdentificationCard identificationCard) {
+    if (this.customerService.customerExists(identifier)) {
+      if (this.customerService.identificationCardExists(identificationCard.getNumber())) {
+        throw ServiceException.conflict("IdentificationCard {0} already exists.", identificationCard.getNumber());
+      }
+
+      this.commandGateway.process(new CreateIdentificationCardCommand(identifier, identificationCard));
+    } else {
+      throw ServiceException.notFound("Customer {0} not found.", identifier);
+    }
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customers/{identifier}/identifications/{number}",
       method = RequestMethod.PUT,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
   public
   @ResponseBody
-  ResponseEntity<Void> putIdentificationCard(@PathVariable("identifier") final String identifier,
-                                             @RequestBody @Valid  final IdentificationCard identificationCard) {
-    if (this.customerService.customerExists(identifier)) {
-      this.commandGateway.process(new UpdateIdentificationCardCommand(identifier, identificationCard));
-    } else {
-      throw ServiceException.notFound("Customer {0} not found.", identifier);
+  ResponseEntity<Void> updateIdentificationCard(@PathVariable("identifier") final String identifier,
+                                                @PathVariable("number") final String number,
+                                                @RequestBody @Valid final IdentificationCard identificationCard) {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+
+    if(!number.equals(identificationCard.getNumber())) {
+      throw ServiceException.badRequest("Number in path is different from number in request body");
     }
+
+    this.commandGateway.process(new UpdateIdentificationCardCommand(identifier, identificationCard.getNumber(), identificationCard));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.DELETE,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> deleteIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @PathVariable("number") final String number) {
+    this.throwIfCustomerNotExists(identifier);
+
+    this.commandGateway.process(new DeleteIdentificationCardCommand(number));
+
     return ResponseEntity.accepted().build();
   }
 
@@ -544,6 +624,12 @@ public class CustomerRestController {
   private void throwIfPortraitNotExists(final String identifier) {
     if (!this.customerService.portraitExists(identifier)) {
       throw ServiceException.notFound("Portrait for Customer {0} not found.", identifier);
+    }
+  }
+
+  private void throwIfIdentificationCardNotExists(final String number) {
+    if (!this.customerService.identificationCardExists(number)) {
+      throw ServiceException.notFound("Identification card {0} not found.", number);
     }
   }
 

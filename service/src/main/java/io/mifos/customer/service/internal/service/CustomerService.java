@@ -18,6 +18,7 @@ package io.mifos.customer.service.internal.service;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
@@ -79,16 +80,15 @@ public class CustomerService {
     return this.portraitRepository.existsByIdentifier(identifier);
   }
 
+  public Boolean identificationCardExists(final String number) {
+    return this.identificationCardRepository.existsByNumber(number);
+  }
+
   public Optional<Customer> findCustomer(final String identifier) {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
     if (customerEntity != null) {
       final Customer customer = CustomerMapper.map(customerEntity);
       customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
-
-      final IdentificationCardEntity identificationCardEntity = this.identificationCardRepository.findByCustomer(customerEntity);
-      if (identificationCardEntity != null) {
-        customer.setIdentificationCard(IdentificationCardMapper.map(identificationCardEntity));
-      }
 
       final List<ContactDetailEntity> contactDetailEntities = this.contactDetailRepository.findByCustomer(customerEntity);
       if (contactDetailEntities != null) {
@@ -164,5 +164,22 @@ public class CustomerService {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
 
     return this.portraitRepository.findByCustomer(customerEntity);
+  }
+
+  public final List<IdentificationCard> fetchIdentificationCardsByCustomer(final String identifier) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
+    final List<IdentificationCardEntity> identificationCards = this.identificationCardRepository.findByCustomer(customerEntity);
+
+    if (identificationCards != null) {
+      return identificationCards.stream().map(IdentificationCardMapper::map).collect(Collectors.toList());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  public Optional<IdentificationCard> findIdentificationCard(final String number) {
+    final Optional<IdentificationCardEntity> identificationCardEntity = this.identificationCardRepository.findByNumber(number);
+
+    return identificationCardEntity.map(IdentificationCardMapper::map);
   }
 }
