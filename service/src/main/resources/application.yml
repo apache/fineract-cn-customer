@@ -64,3 +64,7 @@ async:
 
 flyway:
   enabled: false
+
+upload:
+  image:
+    max-size: 524288

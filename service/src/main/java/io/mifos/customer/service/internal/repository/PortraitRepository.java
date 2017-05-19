@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2016 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 @Repository
-public interface IdentificationCardRepository extends JpaRepository<IdentificationCardEntity, Long> {
+public interface PortraitRepository extends JpaRepository<PortraitEntity, Long> {
 
-  @Query("SELECT CASE WHEN COUNT(i) > 0 THEN 'true' ELSE 'false' END FROM IdentificationCardEntity i WHERE i.number = :number")
-  Boolean existsByNumber(@Param("number") final String number);
+  @Query("SELECT CASE WHEN COUNT(c) > 0 THEN 'true' ELSE 'false' END FROM PortraitEntity c WHERE c.customer.identifier = :identifier")
+  Boolean existsByIdentifier(@Param("identifier") final String identifier);
 
-  Optional<IdentificationCardEntity> findByNumber(final String number);
+  PortraitEntity findByCustomer(final CustomerEntity customerEntity);
 
-  List<IdentificationCardEntity> findByCustomer(final CustomerEntity customerEntity);
+  void deleteByCustomer(final CustomerEntity customerEntity);
 }

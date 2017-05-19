@@ -21,47 +21,24 @@ import io.mifos.core.api.util.UserContextHolder;
 import io.mifos.core.command.gateway.CommandGateway;
 import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.PermittableGroupIds;
-import io.mifos.customer.api.v1.domain.Address;
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.ContactDetail;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
-import io.mifos.customer.api.v1.domain.TaskDefinition;
+import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.catalog.service.internal.service.FieldValueValidator;
-import io.mifos.customer.service.internal.command.CreateCustomerCommand;
-import io.mifos.customer.service.internal.command.ExecuteTaskForCustomerCommand;
-import io.mifos.customer.service.internal.command.InitializeServiceCommand;
-import io.mifos.customer.service.internal.command.LockCustomerCommand;
-import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateAddressCommand;
-import io.mifos.customer.service.internal.command.UpdateCustomerCommand;
 import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.command.ActivateCustomerCommand;
-import io.mifos.customer.service.internal.command.AddTaskDefinitionToCustomerCommand;
-import io.mifos.customer.service.internal.command.CloseCustomerCommand;
-import io.mifos.customer.service.internal.command.CreateTaskDefinitionCommand;
-import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
-import io.mifos.customer.service.internal.command.UpdateIdentificationCardCommand;
-import io.mifos.customer.service.internal.command.UpdateTaskDefinitionCommand;
+import io.mifos.customer.service.internal.command.*;
+import io.mifos.customer.service.internal.repository.PortraitEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.TaskService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -76,19 +53,22 @@ public class CustomerRestController {
   private final CustomerService customerService;
   private final FieldValueValidator fieldValueValidator;
   private final TaskService taskService;
+  private final Environment environment;
 
   @Autowired
   public CustomerRestController(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
                                 final CommandGateway commandGateway,
                                 final CustomerService customerService,
                                 final FieldValueValidator fieldValueValidator,
-                                final TaskService taskService) {
+                                final TaskService taskService,
+                                final Environment environment) {
     super();
     this.logger = logger;
     this.commandGateway = commandGateway;
     this.customerService = customerService;
     this.fieldValueValidator = fieldValueValidator;
     this.taskService = taskService;
+    this.environment = environment;
   }
 
   @Permittable(value = AcceptedTokenType.SYSTEM)
@@ -315,9 +295,9 @@ public class CustomerRestController {
         final Customer customer;
         switch (TaskDefinition.Type.valueOf(taskDefinition.getType())) {
           case ID_CARD:
-            customer = this.customerService.findCustomer(identifier).get();
-            if (customer.getIdentificationCard() == null) {
-              throw ServiceException.conflict("No identification card for customer found.");
+            final List<IdentificationCard> identificationCards = this.customerService.fetchIdentificationCardsByCustomer(identifier);
+            if (identificationCards.isEmpty()) {
+              throw ServiceException.conflict("No identification cards for customer found.");
             }
             break;
           case FOUR_EYES:
@@ -395,20 +375,168 @@ public class CustomerRestController {
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
   @RequestMapping(
-      value = "/customers/{identifier}/identification",
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public @ResponseBody ResponseEntity<List<IdentificationCard>> fetchIdentificationCards(@PathVariable("identifier") final String identifier) {
+    this.throwIfCustomerNotExists(identifier);
+    return ResponseEntity.ok(this.customerService.fetchIdentificationCardsByCustomer(identifier));
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<IdentificationCard> findIdentificationCard(@PathVariable("identifier") final String identifier,
+                                            @PathVariable("number") final String number) {
+    this.throwIfCustomerNotExists(identifier);
+
+    final Optional<IdentificationCard> identificationCard = this.customerService.findIdentificationCard(number);
+    if (identificationCard.isPresent()) {
+      return ResponseEntity.ok(identificationCard.get());
+    } else {
+      throw ServiceException.notFound("Identification card {0} not found.", number);
+    }
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> createIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @RequestBody @Valid final IdentificationCard identificationCard) {
+    if (this.customerService.customerExists(identifier)) {
+      if (this.customerService.identificationCardExists(identificationCard.getNumber())) {
+        throw ServiceException.conflict("IdentificationCard {0} already exists.", identificationCard.getNumber());
+      }
+
+      this.commandGateway.process(new CreateIdentificationCardCommand(identifier, identificationCard));
+    } else {
+      throw ServiceException.notFound("Customer {0} not found.", identifier);
+    }
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customers/{identifier}/identifications/{number}",
       method = RequestMethod.PUT,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
   public
   @ResponseBody
-  ResponseEntity<Void> putIdentificationCard(@PathVariable("identifier") final String identifier,
-                                             @RequestBody @Valid  final IdentificationCard identificationCard) {
-    if (this.customerService.customerExists(identifier)) {
-      this.commandGateway.process(new UpdateIdentificationCardCommand(identifier, identificationCard));
-    } else {
-      throw ServiceException.notFound("Customer {0} not found.", identifier);
+  ResponseEntity<Void> updateIdentificationCard(@PathVariable("identifier") final String identifier,
+                                                @PathVariable("number") final String number,
+                                                @RequestBody @Valid final IdentificationCard identificationCard) {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+
+    if(!number.equals(identificationCard.getNumber())) {
+      throw ServiceException.badRequest("Number in path is different from number in request body");
     }
+
+    this.commandGateway.process(new UpdateIdentificationCardCommand(identifier, identificationCard.getNumber(), identificationCard));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}",
+          method = RequestMethod.DELETE,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> deleteIdentificationCard(@PathVariable("identifier") final String identifier,
+                                @PathVariable("number") final String number) {
+    this.throwIfCustomerNotExists(identifier);
+
+    this.commandGateway.process(new DeleteIdentificationCardCommand(number));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customers/{identifier}/portrait",
+      method = RequestMethod.GET,
+      consumes = MediaType.ALL_VALUE
+  )
+  public ResponseEntity<byte[]> getPortrait(@PathVariable("identifier") final String identifier) {
+    this.throwIfPortraitNotExists(identifier);
+
+    final PortraitEntity portrait = this.customerService.findPortrait(identifier);
+
+    return ResponseEntity
+            .ok()
+            .contentType(MediaType.parseMediaType(portrait.getContentType()))
+            .contentLength(portrait.getImage().length)
+            .body(portrait.getImage());
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customers/{identifier}/portrait",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  public @ResponseBody ResponseEntity<Void> putPortrait(@PathVariable("identifier") final String identifier,
+                                          @RequestBody final MultipartFile portrait) {
+    if(portrait == null) {
+      throw ServiceException.badRequest("Portrait not found");
+    }
+
+    this.throwIfCustomerNotExists(identifier);
+
+    final Long maxSize = this.environment.getProperty("upload.image.max-size", Long.class);
+
+    if(portrait.getSize() > maxSize) {
+      throw ServiceException.badRequest("Portrait can't exceed size of {0}", maxSize);
+    }
+
+    if(!portrait.getContentType().contains(MediaType.IMAGE_JPEG_VALUE)
+            && !portrait.getContentType().contains(MediaType.IMAGE_PNG_VALUE)) {
+      throw ServiceException.badRequest("Only content type {0} and {1} allowed", MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE);
+    }
+
+    try {
+      this.commandGateway.process(new DeletePortraitCommand(identifier), String.class).get();
+    } catch (Throwable e) {
+      logger.warn("Could not delete portrait: {0}", e.getMessage());
+    }
+
+    this.commandGateway.process(new CreatePortraitCommand(identifier, portrait));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customers/{identifier}/portrait",
+      method = RequestMethod.DELETE,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.ALL_VALUE
+  )
+  public @ResponseBody ResponseEntity<Void> deletePortrait(@PathVariable("identifier") final String identifier) {
+    this.commandGateway.process(new DeletePortraitCommand(identifier));
+
     return ResponseEntity.accepted().build();
   }
 
@@ -486,4 +614,23 @@ public class CustomerRestController {
     final Sort.Direction direction = sortDirection != null ? Sort.Direction.valueOf(sortDirection.toUpperCase()) : Sort.Direction.ASC;
     return new PageRequest(pageIndexToUse, sizeToUse, direction, sortColumnToUse);
   }
+
+  private void throwIfCustomerNotExists(final String identifier) {
+    if (!this.customerService.customerExists(identifier)) {
+      throw ServiceException.notFound("Customer {0} not found.", identifier);
+    }
+  }
+
+  private void throwIfPortraitNotExists(final String identifier) {
+    if (!this.customerService.portraitExists(identifier)) {
+      throw ServiceException.notFound("Portrait for Customer {0} not found.", identifier);
+    }
+  }
+
+  private void throwIfIdentificationCardNotExists(final String number) {
+    if (!this.customerService.identificationCardExists(number)) {
+      throw ServiceException.notFound("Identification card {0} not found.", number);
+    }
+  }
+
 }

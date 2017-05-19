@@ -18,6 +18,7 @@ package io.mifos.customer.service.internal.service;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
@@ -27,14 +28,7 @@ import io.mifos.customer.service.internal.mapper.CommandMapper;
 import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
 import io.mifos.customer.service.internal.mapper.CustomerMapper;
 import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.repository.CommandEntity;
-import io.mifos.customer.service.internal.repository.CommandRepository;
-import io.mifos.customer.service.internal.repository.ContactDetailEntity;
-import io.mifos.customer.service.internal.repository.ContactDetailRepository;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.CustomerRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
+import io.mifos.customer.service.internal.repository.*;
 import io.mifos.customer.service.internal.mapper.AddressMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +49,7 @@ public class CustomerService {
   private final Logger logger;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
+  private final PortraitRepository portraitRepository;
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
   private final CommandRepository commandRepository;
@@ -63,6 +58,7 @@ public class CustomerService {
   public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
                          final CustomerRepository customerRepository,
                          final IdentificationCardRepository identificationCardRepository,
+                         final PortraitRepository portraitRepository,
                          final ContactDetailRepository contactDetailRepository,
                          final FieldValueRepository fieldValueRepository,
                          final CommandRepository commandRepository) {
@@ -70,6 +66,7 @@ public class CustomerService {
     this.logger = logger;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
+    this.portraitRepository = portraitRepository;
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
     this.commandRepository = commandRepository;
@@ -79,16 +76,19 @@ public class CustomerService {
     return this.customerRepository.existsByIdentifier(identifier);
   }
 
+  public Boolean portraitExists(final String identifier) {
+    return this.portraitRepository.existsByIdentifier(identifier);
+  }
+
+  public Boolean identificationCardExists(final String number) {
+    return this.identificationCardRepository.existsByNumber(number);
+  }
+
   public Optional<Customer> findCustomer(final String identifier) {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
     if (customerEntity != null) {
       final Customer customer = CustomerMapper.map(customerEntity);
       customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
-
-      final IdentificationCardEntity identificationCardEntity = this.identificationCardRepository.findByCustomer(customerEntity);
-      if (identificationCardEntity != null) {
-        customer.setIdentificationCard(IdentificationCardMapper.map(identificationCardEntity));
-      }
 
       final List<ContactDetailEntity> contactDetailEntities = this.contactDetailRepository.findByCustomer(customerEntity);
       if (contactDetailEntities != null) {
@@ -158,5 +158,28 @@ public class CustomerService {
     } else {
       return Collections.emptyList();
     }
+  }
+
+  public final PortraitEntity findPortrait(final String identifier) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
+
+    return this.portraitRepository.findByCustomer(customerEntity);
+  }
+
+  public final List<IdentificationCard> fetchIdentificationCardsByCustomer(final String identifier) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
+    final List<IdentificationCardEntity> identificationCards = this.identificationCardRepository.findByCustomer(customerEntity);
+
+    if (identificationCards != null) {
+      return identificationCards.stream().map(IdentificationCardMapper::map).collect(Collectors.toList());
+    } else {
+      return Collections.emptyList();
+    }
+  }
+
+  public Optional<IdentificationCard> findIdentificationCard(final String number) {
+    final Optional<IdentificationCardEntity> identificationCardEntity = this.identificationCardRepository.findByNumber(number);
+
+    return identificationCardEntity.map(IdentificationCardMapper::map);
   }
 }

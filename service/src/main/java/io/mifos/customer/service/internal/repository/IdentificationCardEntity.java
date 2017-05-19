@@ -16,6 +16,7 @@
 package io.mifos.customer.service.internal.repository;
 
 import io.mifos.core.mariadb.util.LocalDateConverter;
+import io.mifos.core.mariadb.util.LocalDateTimeConverter;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -28,6 +29,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "maat_identification_cards")
@@ -49,6 +51,16 @@ public class IdentificationCardEntity {
   private LocalDate expirationDate;
   @Column(name = "issuer")
   private String issuer;
+  @Column(name = "created_by")
+  private String createdBy;
+  @Column(name = "created_on")
+  @Convert(converter = LocalDateTimeConverter.class)
+  private LocalDateTime createdOn;
+  @Column(name = "last_modified_by")
+  private String lastModifiedBy;
+  @Column(name = "last_modified_on")
+  @Convert(converter = LocalDateTimeConverter.class)
+  private LocalDateTime lastModifiedOn;
 
   public IdentificationCardEntity() {
     super();
@@ -100,5 +112,37 @@ public class IdentificationCardEntity {
 
   public void setIssuer(final String issuer) {
     this.issuer = issuer;
+  }
+
+  public String getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(String createdBy) {
+    this.createdBy = createdBy;
+  }
+
+  public LocalDateTime getCreatedOn() {
+    return createdOn;
+  }
+
+  public void setCreatedOn(LocalDateTime createdOn) {
+    this.createdOn = createdOn;
+  }
+
+  public String getLastModifiedBy() {
+    return lastModifiedBy;
+  }
+
+  public void setLastModifiedBy(String lastModifiedBy) {
+    this.lastModifiedBy = lastModifiedBy;
+  }
+
+  public LocalDateTime getLastModifiedOn() {
+    return lastModifiedOn;
+  }
+
+  public void setLastModifiedOn(LocalDateTime lastModifiedOn) {
+    this.lastModifiedOn = lastModifiedOn;
   }
 }

@@ -132,7 +132,6 @@ public class TestTaskInstance {
 
     // create a random customer
     final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
-    randomCustomer.setIdentificationCard(null);
     this.customerManager.createCustomer(randomCustomer);
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
 
@@ -155,8 +154,8 @@ public class TestTaskInstance {
     }
 
     // set the ID card for the customer
-    this.customerManager.putIdentificationCard(randomCustomer.getIdentifier(), IdentificationCardGenerator.createRandomIdentificationCard());
-    this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, randomCustomer.getIdentifier());
+    this.customerManager.createIdentificationCard(randomCustomer.getIdentifier(), IdentificationCardGenerator.createRandomIdentificationCard());
+    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, randomCustomer.getIdentifier());
 
     // close the task
     this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());

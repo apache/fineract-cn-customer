@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2016 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,24 @@
  */
 package io.mifos.customer.service.internal.command;
 
-import io.mifos.customer.api.v1.domain.IdentificationCard;
+import org.springframework.web.multipart.MultipartFile;
 
-public class UpdateIdentificationCardCommand {
+public class CreatePortraitCommand {
 
   private final String identifier;
-  private final String number;
-  private final IdentificationCard identificationCard;
+  private final MultipartFile portrait;
 
-  public UpdateIdentificationCardCommand(final String identifier, final String number, final IdentificationCard identificationCard) {
+  public CreatePortraitCommand(final String identifier, final MultipartFile portrait) {
     super();
     this.identifier = identifier;
-    this.number = number;
-    this.identificationCard = identificationCard;
+    this.portrait = portrait;
   }
 
   public String identifier() {
     return this.identifier;
   }
 
-  public String number() {
-    return this.number;
-  }
-
-  public IdentificationCard identificationCard() {
-    return this.identificationCard;
+  public MultipartFile portrait() {
+    return this.portrait;
   }
 }

@@ -15,6 +15,7 @@
  */
 package io.mifos.customer.service.internal.mapper;
 
+import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.domain.ExpirationDate;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
@@ -40,6 +41,15 @@ public final class IdentificationCardMapper {
     identificationCard.setNumber(identificationCardEntity.getNumber());
     identificationCard.setExpirationDate(ExpirationDate.fromLocalDate(identificationCardEntity.getExpirationDate()));
     identificationCard.setIssuer(identificationCardEntity.getIssuer());
+
+    identificationCard.setCreatedBy(identificationCardEntity.getCreatedBy());
+    identificationCard.setCreatedOn(DateConverter.toIsoString(identificationCardEntity.getCreatedOn()));
+
+    if (identificationCardEntity.getLastModifiedBy() != null) {
+      identificationCard.setLastModifiedBy(identificationCardEntity.getLastModifiedBy());
+      identificationCard.setLastModifiedOn(DateConverter.toIsoString(identificationCardEntity.getLastModifiedOn()));
+    }
+
     return identificationCard;
   }
 }

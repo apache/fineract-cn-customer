@@ -48,8 +48,6 @@ public final class Customer {
   private String surname;
   @NotNull
   private DateOfBirth dateOfBirth;
-  @Valid
-  private IdentificationCard identificationCard;
   private String accountBeneficiary;
   private String referenceCustomer;
   private String assignedOffice;
@@ -116,14 +114,6 @@ public final class Customer {
 
   public void setDateOfBirth(final DateOfBirth dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
-  }
-
-  public IdentificationCard getIdentificationCard() {
-    return this.identificationCard;
-  }
-
-  public void setIdentificationCard(final IdentificationCard identificationCard) {
-    this.identificationCard = identificationCard;
   }
 
   public String getAccountBeneficiary() {

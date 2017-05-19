@@ -24,22 +24,10 @@ import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
-import io.mifos.customer.api.v1.client.CustomerManager;
-import io.mifos.customer.api.v1.client.CustomerNotFoundException;
-import io.mifos.customer.api.v1.client.CustomerValidationException;
-import io.mifos.customer.api.v1.domain.Address;
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.ContactDetail;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.client.*;
+import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
-import io.mifos.customer.util.AddressGenerator;
-import io.mifos.customer.util.CommandGenerator;
-import io.mifos.customer.util.ContactDetailGenerator;
-import io.mifos.customer.util.CustomerGenerator;
-import io.mifos.customer.util.IdentificationCardGenerator;
+import io.mifos.customer.util.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.*;
 import org.junit.rules.RuleChain;
@@ -52,6 +40,8 @@ import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
@@ -175,7 +165,6 @@ public class TestCustomer {
 
     final Customer foundCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(foundCustomer);
-    Assert.assertNotNull(foundCustomer.getIdentificationCard());
     Assert.assertNotNull(foundCustomer.getAddress());
     Assert.assertNotNull(foundCustomer.getContactDetails());
     Assert.assertEquals(2, foundCustomer.getContactDetails().size());
@@ -398,22 +387,183 @@ public class TestCustomer {
   }
 
   @Test
-  public void shouldUpdateIdentificationCard() throws Exception {
+  public void shouldFetchIdentificationCards() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    Stream.of(
+            IdentificationCardGenerator.createRandomIdentificationCard(),
+            IdentificationCardGenerator.createRandomIdentificationCard(),
+            IdentificationCardGenerator.createRandomIdentificationCard()
+    ).forEach(identificationCard -> {
+      this.customerManager.createIdentificationCard(customer.getIdentifier(), identificationCard);
+      try {
+        this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, identificationCard.getNumber());
+      } catch (final InterruptedException ex) {
+        Assert.fail(ex.getMessage());
+      }
+    });
+
+    final List<IdentificationCard> result = this.customerManager.fetchIdentificationCards(customer.getIdentifier());
+
+    Assert.assertTrue(result.size() == 3);
+  }
+
+  @Test
+  public void shouldCreateIdentificationCard() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
     this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
     final IdentificationCard newIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-    this.customerManager.putIdentificationCard(customer.getIdentifier(), newIdentificationCard);
 
-    this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, customer.getIdentifier());
+    this.customerManager.createIdentificationCard(customer.getIdentifier(), newIdentificationCard);
 
-    final Customer changedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
-    final IdentificationCard changedIdentificationCard = changedCustomer.getIdentificationCard();
-    Assert.assertNotNull(changedIdentificationCard);
-    Assert.assertEquals(newIdentificationCard.getType(), changedIdentificationCard.getType());
-    Assert.assertEquals(newIdentificationCard.getIssuer(), changedIdentificationCard.getIssuer());
-    Assert.assertEquals(newIdentificationCard.getNumber(), changedIdentificationCard.getNumber());
+    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, newIdentificationCard.getNumber());
+
+    final IdentificationCard identificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), newIdentificationCard.getNumber());
+
+    Assert.assertNotNull(identificationCard);
+
+    Assert.assertEquals(identificationCard.getCreatedBy(), TEST_USER);
+  }
+
+  @Test
+  public void shouldUpdateIdentificationCard() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final IdentificationCard newIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
+
+    this.customerManager.createIdentificationCard(customer.getIdentifier(), newIdentificationCard);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, newIdentificationCard.getNumber());
+
+    final IdentificationCard identificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), newIdentificationCard.getNumber());
+
+    final IdentificationCard updatedIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
+
+    updatedIdentificationCard.setNumber(newIdentificationCard.getNumber());
+
+    this.customerManager.updateIdentificationCard(customer.getIdentifier(), updatedIdentificationCard.getNumber(), updatedIdentificationCard);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, updatedIdentificationCard.getNumber());
+
+    final IdentificationCard changedIdentificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
+
+    Assert.assertEquals(updatedIdentificationCard.getType(), changedIdentificationCard.getType());
+    Assert.assertEquals(updatedIdentificationCard.getIssuer(), changedIdentificationCard.getIssuer());
+    Assert.assertEquals(updatedIdentificationCard.getNumber(), changedIdentificationCard.getNumber());
+    Assert.assertEquals(TEST_USER, changedIdentificationCard.getLastModifiedBy());
+  }
+
+  @Test(expected = IdentificationCardNotFoundException.class)
+  public void shouldDeleteIdentificationCard() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final IdentificationCard identificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
+
+    this.customerManager.createIdentificationCard(customer.getIdentifier(), identificationCard);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, identificationCard.getNumber());
+
+    this.customerManager.deleteIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
+
+    this.eventRecorder.wait(CustomerEventConstants.DELETE_IDENTIFICATION_CARD, identificationCard.getNumber());
+
+    this.customerManager.findIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
+  }
+
+  @Test
+  public void shouldUploadPortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    this.customerManager.findCustomer(customer.getIdentifier());
+
+    final MockMultipartFile file = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), file);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
+
+    Assert.assertArrayEquals(file.getBytes(), portrait);
+  }
+
+  @Test
+  public void shouldReplacePortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    this.eventRecorder.clear();
+
+    final MockMultipartFile secondFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i do care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), secondFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    final byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
+
+    Assert.assertArrayEquals(secondFile.getBytes(), portrait);
+  }
+
+  @Test(expected = PortraitValidationException.class)
+  public void shouldThrowIfPortraitExceedsMaxSize() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, RandomStringUtils.randomAlphanumeric(750000).getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+  }
+
+  @Test(expected = PortraitNotFoundException.class)
+  public void shouldDeletePortrait() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
+
+    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+
+    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+
+    this.customerManager.deletePortrait(customer.getIdentifier());
+
+    this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier());
+
+    this.customerManager.getPortrait(customer.getIdentifier());
   }
 }

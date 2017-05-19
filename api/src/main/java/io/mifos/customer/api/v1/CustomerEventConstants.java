@@ -28,7 +28,9 @@ public interface CustomerEventConstants {
   String PUT_CUSTOMER = "put-customer";
   String PUT_ADDRESS = "put-address";
   String PUT_CONTACT_DETAILS = "put-contact-details";
+  String POST_IDENTIFICATION_CARD = "post-identification-card";
   String PUT_IDENTIFICATION_CARD = "put-identification-card";
+  String DELETE_IDENTIFICATION_CARD = "delete-identification-card";
 
   String ACTIVATE_CUSTOMER = "activate-customer";
   String LOCK_CUSTOMER = "lock-customer";
@@ -39,13 +41,19 @@ public interface CustomerEventConstants {
   String POST_TASK = "post-task";
   String PUT_TASK = "put-task";
 
+  String PUT_PORTRAIT = "put-portrait";
+  String DELETE_PORTRAIT = "delete-portrait";
+
   String SELECTOR_INITIALIZE = SELECTOR_NAME + " = '" + INITIALIZE + "'";
 
   String SELECTOR_POST_CUSTOMER = SELECTOR_NAME + " = '" + POST_CUSTOMER + "'";
   String SELECTOR_PUT_CUSTOMER = SELECTOR_NAME + " = '" + PUT_CUSTOMER + "'";
   String SELECTOR_PUT_ADDRESS = SELECTOR_NAME + " = '" + PUT_ADDRESS + "'";
   String SELECTOR_PUT_CONTACT_DETAILS = SELECTOR_NAME + " = '" + PUT_CONTACT_DETAILS + "'";
+
+  String SELECTOR_POST_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + POST_IDENTIFICATION_CARD + "'";
   String SELECTOR_PUT_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + PUT_IDENTIFICATION_CARD + "'";
+  String SELECTOR_DELETE_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + DELETE_IDENTIFICATION_CARD + "'";
 
   String SELECTOR_ACTIVATE_CUSTOMER = SELECTOR_NAME + " = '" + ACTIVATE_CUSTOMER + "'";
   String SELECTOR_LOCK_CUSTOMER = SELECTOR_NAME + " = '" + LOCK_CUSTOMER + "'";
@@ -55,4 +63,7 @@ public interface CustomerEventConstants {
 
   String SELECTOR_POST_TASK = SELECTOR_NAME + " = '" + POST_TASK + "'";
   String SELECTOR_PUT_TASK = SELECTOR_NAME + " = '" + PUT_TASK + "'";
+
+  String SELECTOR_PUT_PORTRAIT = SELECTOR_NAME + " = '" + PUT_PORTRAIT + "'";
+  String SELECTOR_DELETE_PORTRAIT = SELECTOR_NAME + " = '" + DELETE_PORTRAIT + "'";
 }

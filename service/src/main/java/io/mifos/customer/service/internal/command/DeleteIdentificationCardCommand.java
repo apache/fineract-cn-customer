@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2016 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,17 @@
  */
 package io.mifos.customer.service.internal.command;
 
-import io.mifos.customer.api.v1.domain.IdentificationCard;
+public class DeleteIdentificationCardCommand {
 
-public class UpdateIdentificationCardCommand {
-
-  private final String identifier;
   private final String number;
-  private final IdentificationCard identificationCard;
 
-  public UpdateIdentificationCardCommand(final String identifier, final String number, final IdentificationCard identificationCard) {
+  public DeleteIdentificationCardCommand(final String number) {
     super();
-    this.identifier = identifier;
     this.number = number;
-    this.identificationCard = identificationCard;
-  }
-
-  public String identifier() {
-    return this.identifier;
   }
 
   public String number() {
     return this.number;
   }
 
-  public IdentificationCard identificationCard() {
-    return this.identificationCard;
-  }
 }
