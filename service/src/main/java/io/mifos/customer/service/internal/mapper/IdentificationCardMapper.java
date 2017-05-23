@@ -42,8 +42,10 @@ public final class IdentificationCardMapper {
     identificationCard.setExpirationDate(ExpirationDate.fromLocalDate(identificationCardEntity.getExpirationDate()));
     identificationCard.setIssuer(identificationCardEntity.getIssuer());
 
-    identificationCard.setCreatedBy(identificationCardEntity.getCreatedBy());
-    identificationCard.setCreatedOn(DateConverter.toIsoString(identificationCardEntity.getCreatedOn()));
+    if (identificationCardEntity.getCreatedBy() != null ) {
+      identificationCard.setCreatedBy(identificationCardEntity.getCreatedBy());
+      identificationCard.setCreatedOn(DateConverter.toIsoString(identificationCardEntity.getCreatedOn()));
+    }
 
     if (identificationCardEntity.getLastModifiedBy() != null) {
       identificationCard.setLastModifiedBy(identificationCardEntity.getLastModifiedBy());
