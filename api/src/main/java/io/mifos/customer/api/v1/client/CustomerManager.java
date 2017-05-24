@@ -243,7 +243,7 @@ public interface CustomerManager {
 
   @RequestMapping(
           value = "/customers/{identifier}/portrait",
-          method = RequestMethod.PUT,
+          method = RequestMethod.POST,
           produces = MediaType.ALL_VALUE,
           consumes = MediaType.MULTIPART_FORM_DATA_VALUE
   )
@@ -251,7 +251,7 @@ public interface CustomerManager {
           @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
           @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = PortraitValidationException.class),
   })
-  void putPortrait(@PathVariable("identifier") final String identifier,
+  void postPortrait(@PathVariable("identifier") final String identifier,
                    @RequestBody final MultipartFile portrait);
 
   @RequestMapping(

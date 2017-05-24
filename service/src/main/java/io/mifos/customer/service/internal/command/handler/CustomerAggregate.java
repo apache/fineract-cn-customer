@@ -390,7 +390,7 @@ public class CustomerAggregate {
 
   @Transactional
   @CommandHandler
-  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_PORTRAIT)
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_PORTRAIT)
   public String createPortrait(final CreatePortraitCommand createPortraitCommand) throws IOException {
     if(createPortraitCommand.portrait() == null) {
       return null;
