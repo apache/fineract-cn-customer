@@ -18,6 +18,8 @@ package io.mifos.customer;
 public interface PermittableGroupIds {
 
   String CUSTOMER = "customer__v1__customer";
+  String PORTRAIT = "customer__v1__portrait";
+  String IDENTIFICATIONS = "customer__v1__identifications";
   String TASK = "customer__v1__task";
   String CATALOG = "catalog__v1__catalog";
 }

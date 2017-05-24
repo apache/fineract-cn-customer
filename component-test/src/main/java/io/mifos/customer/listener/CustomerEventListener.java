@@ -148,7 +148,7 @@ public class CustomerEventListener {
   )
   public void portraitPutEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                              final String payload) {
-    this.eventRecorder.event(tenant, CustomerEventConstants.PUT_PORTRAIT, payload, String.class);
+    this.eventRecorder.event(tenant, CustomerEventConstants.POST_PORTRAIT, payload, String.class);
   }
 
   @JmsListener(

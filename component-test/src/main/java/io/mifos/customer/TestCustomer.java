@@ -497,9 +497,9 @@ public class TestCustomer {
 
     final MockMultipartFile file = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
 
-    this.customerManager.putPortrait(customer.getIdentifier(), file);
+    this.customerManager.postPortrait(customer.getIdentifier(), file);
 
-    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier());
 
     byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
 
@@ -516,17 +516,18 @@ public class TestCustomer {
 
     final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
 
-    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+    this.customerManager.postPortrait(customer.getIdentifier(), firstFile);
 
-    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
-
-    this.eventRecorder.clear();
+    this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier());
 
     final MockMultipartFile secondFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i do care".getBytes());
 
-    this.customerManager.putPortrait(customer.getIdentifier(), secondFile);
+    this.customerManager.postPortrait(customer.getIdentifier(), secondFile);
 
-    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier());
+
+    // For a unknown reason the wait gets the POST_PORTRAIT event although the the entity has not been written into the database
+    Thread.sleep(500);
 
     final byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
 
@@ -543,7 +544,7 @@ public class TestCustomer {
 
     final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, RandomStringUtils.randomAlphanumeric(750000).getBytes());
 
-    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+    this.customerManager.postPortrait(customer.getIdentifier(), firstFile);
   }
 
   @Test(expected = PortraitNotFoundException.class)
@@ -556,9 +557,9 @@ public class TestCustomer {
 
     final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
 
-    this.customerManager.putPortrait(customer.getIdentifier(), firstFile);
+    this.customerManager.postPortrait(customer.getIdentifier(), firstFile);
 
-    this.eventRecorder.wait(CustomerEventConstants.PUT_PORTRAIT, customer.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier());
 
     this.customerManager.deletePortrait(customer.getIdentifier());
 
