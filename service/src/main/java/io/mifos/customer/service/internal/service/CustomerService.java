@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,13 +126,16 @@ public class CustomerService {
     final Page<CustomerEntity> customerEntities;
     if (includeClosed) {
       if (term != null) {
-        customerEntities = this.customerRepository.findByIdentifierContaining(term, pageable);
+        customerEntities =
+            this.customerRepository.findByIdentifierContainingOrGivenNameContainingOrSurnameContaining(term, term, term, pageable);
       } else {
         customerEntities = this.customerRepository.findAll(pageable);
       }
     } else {
       if (term != null) {
-        customerEntities = this.customerRepository.findByCurrentStateNotAndIdentifierContaining(Customer.State.CLOSED.name(), term, pageable);
+        customerEntities =
+            this.customerRepository.findByCurrentStateNotAndIdentifierContainingOrGivenNameContainingOrSurnameContaining(
+                Customer.State.CLOSED.name(), term, term, term, pageable);
       } else {
         customerEntities = this.customerRepository.findByCurrentStateNot(Customer.State.CLOSED.name(), pageable);
       }

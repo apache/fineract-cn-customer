@@ -14,7 +14,8 @@
 -- limitations under the License.
 --
 
-ALTER TABLE maat_identification_cards ADD created_by VARCHAR(32) NULL;
-ALTER TABLE maat_identification_cards ADD created_on TIMESTAMP(3) NULL;
-ALTER TABLE maat_identification_cards ADD last_modified_by VARCHAR(32) NULL;
-ALTER TABLE maat_identification_cards ADD last_modified_on TIMESTAMP(3) NULL;
+ALTER TABLE maat_customers ADD is_member BOOLEAN NULL;
+
+UPDATE maat_customers set is_member = TRUE;
+
+ALTER TABLE maat_customers MODIFY is_member BOOLEAN NOT NULL;
