@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public final class CustomerGenerator {
     customer.setMiddleName(RandomStringUtils.randomAlphanumeric(256));
     customer.setSurname(RandomStringUtils.randomAlphanumeric(256));
     customer.setDateOfBirth(DateOfBirth.fromLocalDate(LocalDate.now(Clock.systemUTC())));
+    customer.setMember(Boolean.TRUE);
     customer.setAssignedOffice(RandomStringUtils.randomAlphanumeric(8));
     customer.setAssignedEmployee(RandomStringUtils.randomAlphanumeric(8));
     customer.setCurrentState(Customer.State.PENDING.name());

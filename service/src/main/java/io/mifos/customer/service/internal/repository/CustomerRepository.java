@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,13 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
   @Query("SELECT CASE WHEN COUNT(c) > 0 THEN 'true' ELSE 'false' END FROM CustomerEntity c WHERE c.identifier = :identifier")
   Boolean existsByIdentifier(@Param("identifier") final String identifier);
 
-  Page<CustomerEntity> findByIdentifierContaining(final String identifier, final Pageable pageable);
+  Page<CustomerEntity> findByIdentifierContainingOrGivenNameContainingOrSurnameContaining(
+      final String identifier, final String givenName, final String surname, final Pageable pageable);
 
   CustomerEntity findByIdentifier(final String identifier);
 
   Page<CustomerEntity> findByCurrentStateNot(final String state, final Pageable pageable);
 
-  Page<CustomerEntity> findByCurrentStateNotAndIdentifierContaining(final String state, final String identifier, final Pageable pageable);
+  Page<CustomerEntity> findByCurrentStateNotAndIdentifierContainingOrGivenNameContainingOrSurnameContaining(
+      final String state, final String identifier, final String givenName, final String surname, final Pageable pageable);
 }

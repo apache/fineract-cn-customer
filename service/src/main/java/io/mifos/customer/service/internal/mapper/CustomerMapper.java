@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public final class CustomerMapper {
     customerEntity.setMiddleName(customer.getMiddleName());
     customerEntity.setSurname(customer.getSurname());
     customerEntity.setDateOfBirth(Date.valueOf(customer.getDateOfBirth().toLocalDate()));
+    customerEntity.setMember(customer.getMember());
     customerEntity.setAccountBeneficiary(customer.getAccountBeneficiary());
     customerEntity.setReferenceCustomer(customer.getReferenceCustomer());
     customerEntity.setAssignedOffice(customer.getAssignedOffice());
@@ -57,6 +58,7 @@ public final class CustomerMapper {
     customer.setMiddleName(customerEntity.getMiddleName());
     customer.setSurname(customerEntity.getSurname());
     customer.setDateOfBirth(DateOfBirth.fromLocalDate(customerEntity.getDateOfBirth().toLocalDate()));
+    customer.setMember(customerEntity.getMember());
     customer.setAccountBeneficiary(customerEntity.getAccountBeneficiary());
     customer.setReferenceCustomer(customerEntity.getReferenceCustomer());
     customer.setAssignedOffice(customerEntity.getAssignedOffice());

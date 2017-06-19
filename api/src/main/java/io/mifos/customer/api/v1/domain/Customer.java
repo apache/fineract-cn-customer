@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ public final class Customer {
   private String surname;
   @NotNull
   private DateOfBirth dateOfBirth;
+  @NotNull
+  private Boolean member;
   private String accountBeneficiary;
   private String referenceCustomer;
   private String assignedOffice;
@@ -114,6 +116,14 @@ public final class Customer {
 
   public void setDateOfBirth(final DateOfBirth dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
+  }
+
+  public Boolean getMember() {
+    return this.member;
+  }
+
+  public void setMember(final Boolean member) {
+    this.member = member;
   }
 
   public String getAccountBeneficiary() {

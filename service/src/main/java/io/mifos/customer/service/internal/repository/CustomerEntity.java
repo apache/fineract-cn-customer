@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ public class CustomerEntity {
   private String surname;
   @Column(name = "date_of_birth")
   private Date dateOfBirth;
+  @Column(name = "is_member", nullable = false)
+  private Boolean member;
   @Column(name = "account_beneficiary")
   private String accountBeneficiary;
   @Column(name = "reference_customer")
@@ -133,6 +135,14 @@ public class CustomerEntity {
 
   public void setDateOfBirth(final Date dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
+  }
+
+  public Boolean getMember() {
+    return this.member;
+  }
+
+  public void setMember(final Boolean member) {
+    this.member = member;
   }
 
   public String getAccountBeneficiary() {
