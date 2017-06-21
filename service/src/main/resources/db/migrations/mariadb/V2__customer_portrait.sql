@@ -14,6 +14,16 @@
 -- limitations under the License.
 --
 
+CREATE TABLE maat_portraits (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  customer_id BIGINT NOT NULL,
+  content_type VARCHAR(256) NOT NULL,
+  size BIGINT NOT NULL,
+  image MEDIUMBLOB NOT NULL,
+  CONSTRAINT maat_portraits_pk PRIMARY KEY (id),
+  CONSTRAINT maat_id_portraits_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT
+);
+
 ALTER TABLE maat_identification_cards ADD created_by VARCHAR(32) NULL;
 ALTER TABLE maat_identification_cards ADD created_on TIMESTAMP(3) NULL;
 ALTER TABLE maat_identification_cards ADD last_modified_by VARCHAR(32) NULL;
