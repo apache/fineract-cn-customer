@@ -153,6 +153,12 @@ public class CustomerAggregate {
       this.setCustomValues(customer, customerEntity);
     }
 
+    if (customer.getAddress() != null) {
+      this.updateAddress(new UpdateAddressCommand(customer.getIdentifier(), customer.getAddress()));
+    }
+
+    this.updateContactDetails(new UpdateContactDetailsCommand(customer.getIdentifier(), customer.getContactDetails()));
+
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
