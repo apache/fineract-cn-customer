@@ -25,6 +25,7 @@ import io.mifos.customer.api.v1.domain.ContactDetail;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.ProcessStep;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.HttpStatus;
@@ -144,7 +145,7 @@ public interface CustomerManager {
   )
   @ThrowsException(status = HttpStatus.NOT_FOUND, exception = TaskNotFoundException.class)
   List<TaskDefinition> findTasksForCustomer(@PathVariable("identifier") final String identifier,
-                                          @RequestParam(value = "includeExecuted", required = false) final Boolean includeExecuted);
+                                            @RequestParam(value = "includeExecuted", required = false) final Boolean includeExecuted);
 
   @RequestMapping(
       value = "/customers/{identifier}/address",
@@ -302,4 +303,13 @@ public interface CustomerManager {
       @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = TaskValidationException.class)
   })
   void updateTask(@PathVariable("identifier") final String identifier, @RequestBody final TaskDefinition taskDefinition);
+
+  @RequestMapping(
+      value = "/customer/{identifier}/actions",
+      method = RequestMethod.GET,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
+  List<ProcessStep> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier);
 }
