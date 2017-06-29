@@ -19,6 +19,8 @@ import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.domain.ProcessStep;
+import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
@@ -28,6 +30,7 @@ import io.mifos.customer.service.internal.mapper.CommandMapper;
 import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
 import io.mifos.customer.service.internal.mapper.CustomerMapper;
 import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
+import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
 import io.mifos.customer.service.internal.repository.*;
 import io.mifos.customer.service.internal.mapper.AddressMapper;
 import org.slf4j.Logger;
@@ -53,6 +56,8 @@ public class CustomerService {
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
   private final CommandRepository commandRepository;
+  private final TaskDefinitionRepository taskDefinitionRepository;
+  private final TaskInstanceRepository taskInstanceRepository;
 
   @Autowired
   public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
@@ -61,7 +66,9 @@ public class CustomerService {
                          final PortraitRepository portraitRepository,
                          final ContactDetailRepository contactDetailRepository,
                          final FieldValueRepository fieldValueRepository,
-                         final CommandRepository commandRepository) {
+                         final CommandRepository commandRepository,
+                         final TaskDefinitionRepository taskDefinitionRepository,
+                         final TaskInstanceRepository taskInstanceRepository) {
     super();
     this.logger = logger;
     this.customerRepository = customerRepository;
@@ -70,6 +77,8 @@ public class CustomerService {
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
     this.commandRepository = commandRepository;
+    this.taskDefinitionRepository = taskDefinitionRepository;
+    this.taskInstanceRepository = taskInstanceRepository;
   }
 
   public Boolean customerExists(final String identifier) {
@@ -184,5 +193,53 @@ public class CustomerService {
     final Optional<IdentificationCardEntity> identificationCardEntity = this.identificationCardRepository.findByNumber(number);
 
     return identificationCardEntity.map(IdentificationCardMapper::map);
+  }
+
+  public List<ProcessStep> getProcessSteps(final String customerIdentifier) {
+    final ArrayList<ProcessStep> processSteps = new ArrayList<>();
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(customerIdentifier);
+
+    final Customer.State state = Customer.State.valueOf(customerEntity.getCurrentState());
+    switch (state) {
+      case PENDING:
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.ACTIVATE));
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+        break;
+      case ACTIVE:
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.LOCK));
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+        break;
+      case LOCKED:
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.UNLOCK));
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+        break;
+      case CLOSED:
+        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.REOPEN));
+        break;
+    }
+
+    return processSteps;
+  }
+
+  private ProcessStep buildProcessStep(final CustomerEntity customerEntity, final Command.Action action) {
+    final ProcessStep processStep = new ProcessStep();
+
+    final Command command = new Command();
+    command.setAction(action.name());
+    processStep.setCommand(command);
+
+    final ArrayList<TaskDefinition> taskDefinitions = new ArrayList<>();
+    this.taskDefinitionRepository.findByAssignedCommandsContaining(action.name())
+        .forEach(taskDefinitionEntity -> {
+          this.taskInstanceRepository.findByCustomerAndTaskDefinition(customerEntity, taskDefinitionEntity)
+              .forEach(taskInstanceEntity -> {
+                if (taskInstanceEntity.getExecutedBy() == null) {
+                  taskDefinitions.add(TaskDefinitionMapper.map(taskDefinitionEntity));
+                }
+              });
+        });
+    processStep.setTaskDefinitions(taskDefinitions);
+
+    return processStep;
   }
 }

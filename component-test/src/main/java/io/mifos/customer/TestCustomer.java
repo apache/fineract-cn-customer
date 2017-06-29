@@ -568,4 +568,49 @@ public class TestCustomer {
 
     this.customerManager.getPortrait(customer.getIdentifier());
   }
+
+  @Test
+  public void shouldReturnAvailableProcessSteps() throws Exception {
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+
+    this.customerManager.createCustomer(customer);
+
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+    final List<ProcessStep> pendingProcessSteps = this.customerManager.fetchProcessSteps(customer.getIdentifier());
+    Assert.assertEquals(2, pendingProcessSteps.size());
+    Assert.assertEquals(Command.Action.ACTIVATE.name(), pendingProcessSteps.get(0).getCommand().getAction());
+    Assert.assertEquals(Command.Action.CLOSE.name(), pendingProcessSteps.get(1).getCommand().getAction());
+
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
+    this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
+
+    final List<ProcessStep> activeProcessSteps = this.customerManager.fetchProcessSteps(customer.getIdentifier());
+    Assert.assertEquals(2, activeProcessSteps.size());
+    Assert.assertEquals(Command.Action.LOCK.name(), activeProcessSteps.get(0).getCommand().getAction());
+    Assert.assertEquals(Command.Action.CLOSE.name(), activeProcessSteps.get(1).getCommand().getAction());
+
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
+    this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, customer.getIdentifier());
+
+    final List<ProcessStep> lockedProcessSteps = this.customerManager.fetchProcessSteps(customer.getIdentifier());
+    Assert.assertEquals(2, lockedProcessSteps.size());
+    Assert.assertEquals(Command.Action.UNLOCK.name(), lockedProcessSteps.get(0).getCommand().getAction());
+    Assert.assertEquals(Command.Action.CLOSE.name(), lockedProcessSteps.get(1).getCommand().getAction());
+
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.UNLOCK, "Test"));
+    this.eventRecorder.wait(CustomerEventConstants.UNLOCK_CUSTOMER, customer.getIdentifier());
+
+    final List<ProcessStep> unlockedProcessSteps = this.customerManager.fetchProcessSteps(customer.getIdentifier());
+    Assert.assertEquals(2, unlockedProcessSteps.size());
+    Assert.assertEquals(Command.Action.LOCK.name(), unlockedProcessSteps.get(0).getCommand().getAction());
+    Assert.assertEquals(Command.Action.CLOSE.name(), unlockedProcessSteps.get(1).getCommand().getAction());
+
+    this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
+    this.eventRecorder.wait(CustomerEventConstants.CLOSE_CUSTOMER, customer.getIdentifier());
+
+    final List<ProcessStep> closedProcessSteps = this.customerManager.fetchProcessSteps(customer.getIdentifier());
+    Assert.assertEquals(1, closedProcessSteps.size());
+    Assert.assertEquals(Command.Action.REOPEN.name(), closedProcessSteps.get(0).getCommand().getAction());
+  }
 }

@@ -15,7 +15,7 @@
  */
 package io.mifos.customer.api.v1.domain;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public final class Command {
 
@@ -27,7 +27,7 @@ public final class Command {
     REOPEN
   }
 
-  @NotBlank
+  @NotNull
   private Action action;
   private String comment;
   private String createdOn;

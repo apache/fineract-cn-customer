@@ -182,52 +182,34 @@ public class CustomerRestController {
     if (customerOptional.isPresent()) {
       final Customer customer = customerOptional.get();
       final Command.Action action = Command.Action.valueOf(command.getAction());
+      final String currentState = customer.getCurrentState();
       switch (action) {
         case ACTIVATE:
-          if (!customer.getCurrentState().equals(Customer.State.PENDING.name())) {
-            throw ServiceException.badRequest(
-                "Customer {0} can not be activated, current state is {1}.",
-                identifier,
-                customer.getCurrentState());
+          if (Customer.State.PENDING.name().equals(currentState)) {
+            this.commandGateway.process(new ActivateCustomerCommand(identifier, command.getComment()));
           }
-          this.commandGateway.process(new ActivateCustomerCommand(identifier, command.getComment()));
           break;
         case LOCK:
-          if (!customer.getCurrentState().equals(Customer.State.ACTIVE.name())) {
-            throw ServiceException.badRequest(
-                "Customer {0} can not be locked, current state is {1}.",
-                identifier,
-                customer.getCurrentState());
+          if (Customer.State.ACTIVE.name().equals(currentState)) {
+            this.commandGateway.process(new LockCustomerCommand(identifier, command.getComment()));
           }
-          this.commandGateway.process(new LockCustomerCommand(identifier, command.getComment()));
           break;
         case UNLOCK:
-          if (!customer.getCurrentState().equals(Customer.State.LOCKED.name())) {
-            throw ServiceException.badRequest(
-                "Customer {0} can not be unlocked, current state is {1}.",
-                identifier,
-                customer.getCurrentState());
+          if (Customer.State.LOCKED.name().equals(currentState)) {
+            this.commandGateway.process(new UnlockCustomerCommand(identifier, command.getComment()));
           }
-          this.commandGateway.process(new UnlockCustomerCommand(identifier, command.getComment()));
           break;
         case CLOSE:
-          if (!customer.getCurrentState().equals(Customer.State.ACTIVE.name())
-              && !customer.getCurrentState().equals(Customer.State.LOCKED.name())) {
-            throw ServiceException.badRequest(
-                "Customer {0} can not be closed, current state is {1}.",
-                identifier,
-                customer.getCurrentState());
+          if (Customer.State.ACTIVE.name().equals(currentState)
+              || Customer.State.LOCKED.name().equals(currentState)
+              || Customer.State.PENDING.name().equals(currentState)) {
+            this.commandGateway.process(new CloseCustomerCommand(identifier, command.getComment()));
           }
-          this.commandGateway.process(new CloseCustomerCommand(identifier, command.getComment()));
           break;
         case REOPEN:
-          if (!customer.getCurrentState().equals(Customer.State.CLOSED.name())) {
-            throw ServiceException.badRequest(
-                "Customer {0} can not be reopened, current state is {1}.",
-                identifier,
-                customer.getCurrentState());
+          if (Customer.State.CLOSED.name().equals(currentState)) {
+            this.commandGateway.process(new ReopenCustomerCommand(identifier, command.getComment()));
           }
-          this.commandGateway.process(new ReopenCustomerCommand(identifier, command.getComment()));
           break;
         default:
           throw ServiceException.badRequest("Unsupported action {0}.", command.getAction());
@@ -607,6 +589,20 @@ public class CustomerRestController {
     return ResponseEntity.accepted().build();
   }
 
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "/customer/{identifier}/actions",
+      method = RequestMethod.GET,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<List<ProcessStep>> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier) {
+    this.throwIfCustomerNotExists(customerIdentifier);
+    return ResponseEntity.ok(this.customerService.getProcessSteps(customerIdentifier));
+  }
+
   private Pageable createPageRequest(final Integer pageIndex, final Integer size, final String sortColumn, final String sortDirection) {
     final Integer pageIndexToUse = pageIndex != null ? pageIndex : 0;
     final Integer sizeToUse = size != null ? size : 20;
@@ -632,5 +628,4 @@ public class CustomerRestController {
       throw ServiceException.notFound("Identification card {0} not found.", number);
     }
   }
-
 }

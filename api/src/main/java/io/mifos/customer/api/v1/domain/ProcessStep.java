@@ -13,18 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer.service.internal.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+package io.mifos.customer.api.v1.domain;
 
 import java.util.List;
 
-@Repository
-public interface TaskInstanceRepository extends JpaRepository<TaskInstanceEntity, Long> {
+public class ProcessStep {
 
-  List<TaskInstanceEntity> findByCustomer(final CustomerEntity customer);
+  private Command command;
+  private List<TaskDefinition> taskDefinitions;
 
-  List<TaskInstanceEntity> findByCustomerAndTaskDefinition(final CustomerEntity customer,
-                                                           final TaskDefinitionEntity taskDefinitionEntity);
+  public ProcessStep() {
+    super();
+  }
+
+  public Command getCommand() {
+    return this.command;
+  }
+
+  public void setCommand(final Command command) {
+    this.command = command;
+  }
+
+  public List<TaskDefinition> getTaskDefinitions() {
+    return this.taskDefinitions;
+  }
+
+  public void setTaskDefinitions(final List<TaskDefinition> taskDefinitions) {
+    this.taskDefinitions = taskDefinitions;
+  }
 }
