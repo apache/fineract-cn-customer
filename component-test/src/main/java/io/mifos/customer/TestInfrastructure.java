@@ -15,81 +15,18 @@
  */
 package io.mifos.customer;
 
-import io.mifos.anubis.test.v1.TenantApplicationSecurityEnvironmentTestRule;
-import io.mifos.core.test.env.TestEnvironment;
-import io.mifos.core.test.fixture.TenantDataStoreContextTestRule;
-import io.mifos.core.test.fixture.cassandra.CassandraInitializer;
-import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
-import io.mifos.core.test.listener.EnableEventRecording;
-import io.mifos.core.test.listener.EventRecorder;
-import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
 import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class TestInfrastructure {
-  private static final String APP_NAME = "customer-v1";
-
-  @Configuration
-  @EnableEventRecording
-  @ComponentScan(
-      basePackages = {
-          "io.mifos.customer.listener"
-      }
-  )
-  @Import({CustomerRestConfiguration.class})
-  public static class TestConfiguration {
-    public TestConfiguration() {
-      super();
-    }
-  }
-
-  private final static TestEnvironment testEnvironment = new TestEnvironment(APP_NAME);
-  private final static CassandraInitializer cassandraInitializer = new CassandraInitializer();
-  private final static MariaDBInitializer mariaDBInitializer = new MariaDBInitializer();
-  private final static TenantDataStoreContextTestRule tenantDataStoreContext = TenantDataStoreContextTestRule.forRandomTenantName(cassandraInitializer, mariaDBInitializer);
-
-  @ClassRule
-  public static TestRule orderClassRules = RuleChain
-          .outerRule(testEnvironment)
-          .around(cassandraInitializer)
-          .around(mariaDBInitializer)
-          .around(tenantDataStoreContext);
-
-  @Rule
-  public final TenantApplicationSecurityEnvironmentTestRule tenantApplicationSecurityEnvironment
-          = new TenantApplicationSecurityEnvironmentTestRule(testEnvironment, this::waitForInitialize);
-
-  @Autowired
-  private EventRecorder eventRecorder;
+public class TestInfrastructure extends AbstractCustomerTest {
 
   @Autowired
   private DataSource dataSource;
-
-  public boolean waitForInitialize() {
-    try {
-      return this.eventRecorder.wait(CustomerEventConstants.INITIALIZE, CustomerEventConstants.INITIALIZE);
-    } catch (final InterruptedException e) {
-      throw new IllegalStateException(e);
-    }
-  }
 
   @Test
   public void shouldInitializeCustomer() throws Exception {
