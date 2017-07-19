@@ -18,11 +18,13 @@ package io.mifos.customer.service.internal.command.handler;
 import io.mifos.core.api.util.UserContextHolder;
 import io.mifos.core.command.annotation.Aggregate;
 import io.mifos.core.command.annotation.CommandHandler;
+import io.mifos.core.command.annotation.CommandLogLevel;
 import io.mifos.core.command.annotation.EventEmitter;
 import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.events.ScanEvent;
 import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
 import io.mifos.customer.catalog.service.internal.repository.CatalogRepository;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
@@ -34,6 +36,7 @@ import io.mifos.customer.service.internal.mapper.*;
 import io.mifos.customer.service.internal.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -51,6 +54,7 @@ public class CustomerAggregate {
   private final AddressRepository addressRepository;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
+  private final IdentificationCardScanRepository identificationCardScanRepository;
   private final PortraitRepository portraitRepository;
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
@@ -63,6 +67,7 @@ public class CustomerAggregate {
   public CustomerAggregate(final AddressRepository addressRepository,
                            final CustomerRepository customerRepository,
                            final IdentificationCardRepository identificationCardRepository,
+                           final IdentificationCardScanRepository identificationCardScanRepository,
                            final PortraitRepository portraitRepository,
                            final ContactDetailRepository contactDetailRepository,
                            final FieldValueRepository fieldValueRepository,
@@ -74,6 +79,7 @@ public class CustomerAggregate {
     this.addressRepository = addressRepository;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
+    this.identificationCardScanRepository = identificationCardScanRepository;
     this.portraitRepository = portraitRepository;
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
@@ -381,6 +387,10 @@ public class CustomerAggregate {
 
     optionalIdentificationCardEntity.ifPresent(identificationCardEntity -> {
 
+      final List<IdentificationCardScanEntity> cardScanEntities = this.identificationCardScanRepository.findByIdentificationCard(identificationCardEntity);
+
+      this.identificationCardScanRepository.delete(cardScanEntities);
+
       this.identificationCardRepository.delete(identificationCardEntity);
 
       final CustomerEntity customerEntity = identificationCardEntity.getCustomer();
@@ -392,6 +402,60 @@ public class CustomerAggregate {
     });
 
     return deleteIdentificationCardCommand.number();
+  }
+
+  @Transactional
+  @CommandHandler(logStart = CommandLogLevel.INFO, logFinish = CommandLogLevel.INFO)
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_IDENTIFICATION_CARD_SCAN)
+  public ScanEvent createIdentificationCardScan(final CreateIdentificationCardScanCommand command) throws Exception {
+    final Optional<IdentificationCardEntity> identificationCardEntity = this.identificationCardRepository.findByNumber(command.number());
+
+    final IdentificationCardEntity cardEntity = identificationCardEntity.orElseThrow(() -> ServiceException.notFound("Identification card {0} not found.", command.number()));
+
+    final IdentificationCardScanEntity identificationCardScanEntity = IdentificationCardScanMapper.map(command.scan());
+
+    final MultipartFile image = command.image();
+
+    final LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+
+    identificationCardScanEntity.setImage(image.getBytes());
+    identificationCardScanEntity.setContentType(image.getContentType());
+    identificationCardScanEntity.setSize(image.getSize());
+    identificationCardScanEntity.setIdentificationCard(cardEntity);
+    identificationCardScanEntity.setCreatedBy(UserContextHolder.checkedGetUser());
+    identificationCardScanEntity.setCreatedOn(now);
+
+    identificationCardScanRepository.save(identificationCardScanEntity);
+
+    cardEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+    cardEntity.setLastModifiedOn(now);
+
+    identificationCardRepository.save(cardEntity);
+
+    return new ScanEvent(command.number(), command.scan().getIdentifier());
+  }
+
+  @Transactional
+  @CommandHandler(logStart = CommandLogLevel.INFO, logFinish = CommandLogLevel.INFO)
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.DELETE_IDENTIFICATION_CARD_SCAN)
+  public ScanEvent deleteIdentificationCardScan(final DeleteIdentificationCardScanCommand command) {
+    final Optional<IdentificationCardEntity> cardEntity = this.identificationCardRepository.findByNumber(command.number());
+    final Optional<IdentificationCardScanEntity> scanEntity = cardEntity
+            .flatMap(entity -> this.identificationCardScanRepository.findByIdentifierAndIdentificationCard(command.scanIdentifier(), entity));
+
+    scanEntity.ifPresent(identificationCardScanEntity -> {
+
+      this.identificationCardScanRepository.delete(identificationCardScanEntity);
+
+      final IdentificationCardEntity identificationCard = identificationCardScanEntity.getIdentificationCard();
+
+      identificationCard.setLastModifiedBy(UserContextHolder.checkedGetUser());
+      identificationCard.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
+
+      this.identificationCardRepository.save(identificationCard);
+    });
+
+    return new ScanEvent(command.number(), command.scanIdentifier());
   }
 
   @Transactional

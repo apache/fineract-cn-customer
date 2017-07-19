@@ -32,6 +32,9 @@ public interface CustomerEventConstants {
   String PUT_IDENTIFICATION_CARD = "put-identification-card";
   String DELETE_IDENTIFICATION_CARD = "delete-identification-card";
 
+  String POST_IDENTIFICATION_CARD_SCAN = "post-identification-card-scan";
+  String DELETE_IDENTIFICATION_CARD_SCAN = "delete-identification-card-scan";
+
   String ACTIVATE_CUSTOMER = "activate-customer";
   String LOCK_CUSTOMER = "lock-customer";
   String UNLOCK_CUSTOMER = "unlock-customer";
@@ -54,6 +57,9 @@ public interface CustomerEventConstants {
   String SELECTOR_POST_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + POST_IDENTIFICATION_CARD + "'";
   String SELECTOR_PUT_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + PUT_IDENTIFICATION_CARD + "'";
   String SELECTOR_DELETE_IDENTIFICATION_CARD = SELECTOR_NAME + " = '" + DELETE_IDENTIFICATION_CARD + "'";
+
+  String SELECTOR_POST_IDENTIFICATION_CARD_SCAN = SELECTOR_NAME + " = '" + POST_IDENTIFICATION_CARD_SCAN + "'";
+  String SELECTOR_DELETE_IDENTIFICATION_CARD_SCAN = SELECTOR_NAME + " = '" + DELETE_IDENTIFICATION_CARD_SCAN + "'";
 
   String SELECTOR_ACTIVATE_CUSTOMER = SELECTOR_NAME + " = '" + ACTIVATE_CUSTOMER + "'";
   String SELECTOR_LOCK_CUSTOMER = SELECTOR_NAME + " = '" + LOCK_CUSTOMER + "'";
