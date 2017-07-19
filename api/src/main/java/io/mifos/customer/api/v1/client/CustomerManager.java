@@ -17,26 +17,16 @@ package io.mifos.customer.api.v1.client;
 
 import io.mifos.core.api.annotation.ThrowsException;
 import io.mifos.core.api.annotation.ThrowsExceptions;
-import io.mifos.core.api.util.CustomFeignClientsConfiguration;
+import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.api.v1.config.CustomerFeignClientConfig;
-import io.mifos.customer.api.v1.domain.Address;
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.ContactDetail;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.ProcessStep;
-import io.mifos.customer.api.v1.domain.TaskDefinition;
+import io.mifos.customer.api.v1.domain.*;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -231,6 +221,71 @@ public interface CustomerManager {
   })
   void deleteIdentificationCard(@PathVariable("identifier") final String identifier,
                                 @PathVariable("number") final String number);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = IdentificationCardNotFoundException.class)
+  })
+  List<IdentificationCardScan> fetchIdentificationCardScans(@PathVariable("identifier") final String identifier,
+                                                            @PathVariable("number") final String number);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = ScanNotFoundException.class)
+  })
+  IdentificationCardScan findIdentificationCardScan(@PathVariable("identifier") final String identifier,
+                                                     @PathVariable("number") final String number,
+                                                     @PathVariable("scanIdentifier") final String scanIdentifier);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}/image",
+          method = RequestMethod.GET,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = ScanNotFoundException.class)
+  })
+  byte[] fetchIdentificationCardScanImage(@PathVariable("identifier") final String identifier,
+                                          @PathVariable("number") final String number,
+                                          @PathVariable("scanIdentifier") final String scanIdentifier);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans",
+          method = RequestMethod.POST,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.NOT_FOUND, exception = IdentificationCardNotFoundException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = ScanValidationException.class),
+          @ThrowsException(status = HttpStatus.CONFLICT, exception = ScanAlreadyExistsException.class)
+  })
+  void postIdentificationCardScan(@PathVariable("identifier") final String identifier,
+                                  @PathVariable("number") final String number,
+                                  @RequestParam("scanIdentifier") @ValidIdentifier final String scanIdentifier,
+                                  @RequestParam("description") @Size(max = 4096) final String description,
+                                  @RequestBody final MultipartFile image);
+
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}",
+          method = RequestMethod.DELETE,
+          produces = MediaType.ALL_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  void deleteScan(@PathVariable("identifier") final String identifier,
+                  @PathVariable("number") final String number,
+                  @PathVariable("scanIdentifier") final String scanIdentifier);
 
   @RequestMapping(
           value = "/customers/{identifier}/portrait",

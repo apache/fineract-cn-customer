@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative.
+ * Copyright 2016 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer;
+package io.mifos.customer.service.internal.command;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+public class DeleteIdentificationCardScanCommand {
 
-/**
- * @author Myrle Krantz
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TestCustomer.class,
-    TestIdentificationCards.class,
-    TestInfrastructure.class,
-    TestTaskDefinition.class,
-    TestTaskInstance.class,
-})
-public class TestSuite extends SuiteTestEnvironment {
+  private final String number;
+
+  private final String scanIdentifier;
+
+  public DeleteIdentificationCardScanCommand(final String number, final String scanIdentifier) {
+    this.number = number;
+    this.scanIdentifier = scanIdentifier;
+  }
+
+  public String number() { return number; }
+
+  public String scanIdentifier() {
+    return scanIdentifier;
+  }
 }
