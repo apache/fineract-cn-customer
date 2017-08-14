@@ -67,6 +67,18 @@ public interface CustomerManager {
   @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
   Customer findCustomer(@PathVariable("identifier") final String identifier);
 
+  default boolean isCustomerInGoodStanding(final String customerIdentifier) {
+    final Customer customer;
+    try {
+      customer = this.findCustomer(customerIdentifier);
+    }
+    catch (CustomerNotFoundException e) {
+      return false;
+    }
+    final Customer.State state = Customer.State.valueOf(customer.getCurrentState());
+    return (state == Customer.State.ACTIVE);
+  }
+
   @RequestMapping(
       value = "/customers/{identifier}",
       method = RequestMethod.PUT,
