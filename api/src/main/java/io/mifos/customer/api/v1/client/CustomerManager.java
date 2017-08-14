@@ -17,7 +17,6 @@ package io.mifos.customer.api.v1.client;
 
 import io.mifos.core.api.annotation.ThrowsException;
 import io.mifos.core.api.annotation.ThrowsExceptions;
-import io.mifos.core.api.util.CustomFeignClientsConfiguration;
 import io.mifos.customer.api.v1.config.CustomerFeignClientConfig;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
@@ -76,6 +75,18 @@ public interface CustomerManager {
   )
   @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
   Customer findCustomer(@PathVariable("identifier") final String identifier);
+
+  default boolean isCustomerInGoodStanding(final String customerIdentifier) {
+    final Customer customer;
+    try {
+      customer = this.findCustomer(customerIdentifier);
+    }
+    catch (CustomerNotFoundException e) {
+      return false;
+    }
+    final Customer.State state = Customer.State.valueOf(customer.getCurrentState());
+    return (state == Customer.State.ACTIVE);
+  }
 
   @RequestMapping(
       value = "/customers/{identifier}",

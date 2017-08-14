@@ -38,6 +38,9 @@ public class TestCustomer extends AbstractCustomerTest {
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
 
+    //Pending customer is not in good standing.
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     final Customer createdCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(createdCustomer);
   }
@@ -94,6 +97,11 @@ public class TestCustomer extends AbstractCustomerTest {
     } catch (final CustomerNotFoundException ex) {
       // do nothing, expected
     }
+  }
+
+  @Test
+  public void shouldFindNonExistentCustomerIsNotInGoodStanding() throws Exception {
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(testEnvironment.generateUniqueIdentifer("don")));
   }
 
   @Test
@@ -164,6 +172,8 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     final Customer activatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), activatedCustomer.getCurrentState());
   }
@@ -178,8 +188,12 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, customer.getIdentifier());
+
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
 
     final Customer lockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.LOCKED.name(), lockedCustomer.getCurrentState());
@@ -195,11 +209,17 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.LOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.UNLOCK, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.UNLOCK_CUSTOMER, customer.getIdentifier());
+
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
 
     final Customer unlockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), unlockedCustomer.getCurrentState());
@@ -215,8 +235,12 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.CLOSE_CUSTOMER, customer.getIdentifier());
+
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
 
     final Customer closedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.CLOSED.name(), closedCustomer.getCurrentState());
@@ -232,11 +256,17 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.ACTIVATE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.CLOSE, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.CLOSE_CUSTOMER, customer.getIdentifier());
 
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
+
     this.customerManager.customerCommand(customer.getIdentifier(), CommandGenerator.create(Command.Action.REOPEN, "Test"));
     this.eventRecorder.wait(CustomerEventConstants.REOPEN_CUSTOMER, customer.getIdentifier());
+
+    Assert.assertTrue(this.customerManager.isCustomerInGoodStanding(customer.getIdentifier()));
 
     final Customer reopenedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), reopenedCustomer.getCurrentState());
