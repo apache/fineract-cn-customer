@@ -15,24 +15,14 @@
  */
 package io.mifos.customer.service.internal.service;
 
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
-import io.mifos.customer.api.v1.domain.ProcessStep;
-import io.mifos.customer.api.v1.domain.TaskDefinition;
+import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
 import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.mapper.CommandMapper;
-import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
-import io.mifos.customer.service.internal.mapper.CustomerMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
+import io.mifos.customer.service.internal.mapper.*;
 import io.mifos.customer.service.internal.repository.*;
-import io.mifos.customer.service.internal.mapper.AddressMapper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,6 +42,7 @@ public class CustomerService {
   private final Logger logger;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
+  private final IdentificationCardScanRepository identificationCardScanRepository;
   private final PortraitRepository portraitRepository;
   private final ContactDetailRepository contactDetailRepository;
   private final FieldValueRepository fieldValueRepository;
@@ -63,6 +54,7 @@ public class CustomerService {
   public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
                          final CustomerRepository customerRepository,
                          final IdentificationCardRepository identificationCardRepository,
+                         final IdentificationCardScanRepository identificationCardScanRepository,
                          final PortraitRepository portraitRepository,
                          final ContactDetailRepository contactDetailRepository,
                          final FieldValueRepository fieldValueRepository,
@@ -73,6 +65,7 @@ public class CustomerService {
     this.logger = logger;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
+    this.identificationCardScanRepository = identificationCardScanRepository;
     this.portraitRepository = portraitRepository;
     this.contactDetailRepository = contactDetailRepository;
     this.fieldValueRepository = fieldValueRepository;
@@ -91,6 +84,12 @@ public class CustomerService {
 
   public Boolean identificationCardExists(final String number) {
     return this.identificationCardRepository.existsByNumber(number);
+  }
+
+  public Boolean identificationCardScanExists(final String number, final String identifier) {
+    return this.identificationCardRepository.findByNumber(number)
+            .map(cardEntity -> this.identificationCardScanRepository.existsByIdentifierAndIdentificationCard(identifier, cardEntity))
+            .orElse(false);
   }
 
   public Optional<Customer> findCustomer(final String identifier) {
@@ -193,6 +192,28 @@ public class CustomerService {
     final Optional<IdentificationCardEntity> identificationCardEntity = this.identificationCardRepository.findByNumber(number);
 
     return identificationCardEntity.map(IdentificationCardMapper::map);
+  }
+
+  public final List<IdentificationCardScan> fetchScansByIdentificationCard(final String number) {
+    final Optional<IdentificationCardEntity> identificationCard = this.identificationCardRepository.findByNumber(number);
+
+    return identificationCard.map(this.identificationCardScanRepository::findByIdentificationCard)
+            .map(x -> x.stream().map(IdentificationCardScanMapper::map).collect(Collectors.toList()))
+            .orElseGet(Collections::emptyList);
+  }
+
+  private Optional<IdentificationCardScanEntity> findIdentificationCardEntity(final String number, final String identifier) {
+    final Optional<IdentificationCardEntity> cardEntity = this.identificationCardRepository.findByNumber(number);
+    final Optional<IdentificationCardScanEntity> cardScanEntity = cardEntity.flatMap(card -> this.identificationCardScanRepository.findByIdentifierAndIdentificationCard(identifier, card));
+    return cardScanEntity;
+  }
+
+  public Optional<IdentificationCardScan> findIdentificationCardScan(final String number, final String identifier) {
+    return this.findIdentificationCardEntity(number, identifier).map(IdentificationCardScanMapper::map);
+  }
+
+  public Optional<byte[]> findIdentificationCardScanImage(final String number, final String identifier) {
+    return this.findIdentificationCardEntity(number, identifier).map(IdentificationCardScanEntity::getImage);
   }
 
   public List<ProcessStep> getProcessSteps(final String customerIdentifier) {

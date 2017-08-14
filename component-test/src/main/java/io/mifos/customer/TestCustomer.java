@@ -18,7 +18,10 @@ package io.mifos.customer;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.*;
 import io.mifos.customer.api.v1.domain.*;
-import io.mifos.customer.util.*;
+import io.mifos.customer.util.AddressGenerator;
+import io.mifos.customer.util.CommandGenerator;
+import io.mifos.customer.util.ContactDetailGenerator;
+import io.mifos.customer.util.CustomerGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -330,106 +333,6 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertEquals(contactDetail.getValidated(), changedContactDetail.getValidated());
     Assert.assertEquals(contactDetail.getGroup(), changedContactDetail.getGroup());
     Assert.assertEquals(contactDetail.getPreferenceLevel(), changedContactDetail.getPreferenceLevel());
-  }
-
-  @Test
-  public void shouldFetchIdentificationCards() throws Exception {
-    final Customer customer = CustomerGenerator.createRandomCustomer();
-
-    this.customerManager.createCustomer(customer);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
-
-    Stream.of(
-            IdentificationCardGenerator.createRandomIdentificationCard(),
-            IdentificationCardGenerator.createRandomIdentificationCard(),
-            IdentificationCardGenerator.createRandomIdentificationCard()
-    ).forEach(identificationCard -> {
-      this.customerManager.createIdentificationCard(customer.getIdentifier(), identificationCard);
-      try {
-        this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, identificationCard.getNumber());
-      } catch (final InterruptedException ex) {
-        Assert.fail(ex.getMessage());
-      }
-    });
-
-    final List<IdentificationCard> result = this.customerManager.fetchIdentificationCards(customer.getIdentifier());
-
-    Assert.assertTrue(result.size() == 3);
-  }
-
-  @Test
-  public void shouldCreateIdentificationCard() throws Exception {
-    final Customer customer = CustomerGenerator.createRandomCustomer();
-
-    this.customerManager.createCustomer(customer);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
-
-    final IdentificationCard newIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-
-    this.customerManager.createIdentificationCard(customer.getIdentifier(), newIdentificationCard);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, newIdentificationCard.getNumber());
-
-    final IdentificationCard identificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), newIdentificationCard.getNumber());
-
-    Assert.assertNotNull(identificationCard);
-
-    Assert.assertEquals(identificationCard.getCreatedBy(), TEST_USER);
-  }
-
-  @Test
-  public void shouldUpdateIdentificationCard() throws Exception {
-    final Customer customer = CustomerGenerator.createRandomCustomer();
-
-    this.customerManager.createCustomer(customer);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
-
-    final IdentificationCard newIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-
-    this.customerManager.createIdentificationCard(customer.getIdentifier(), newIdentificationCard);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, newIdentificationCard.getNumber());
-
-    final IdentificationCard identificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), newIdentificationCard.getNumber());
-
-    final IdentificationCard updatedIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-
-    updatedIdentificationCard.setNumber(newIdentificationCard.getNumber());
-
-    this.customerManager.updateIdentificationCard(customer.getIdentifier(), updatedIdentificationCard.getNumber(), updatedIdentificationCard);
-
-    this.eventRecorder.wait(CustomerEventConstants.PUT_IDENTIFICATION_CARD, updatedIdentificationCard.getNumber());
-
-    final IdentificationCard changedIdentificationCard = this.customerManager.findIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
-
-    Assert.assertEquals(updatedIdentificationCard.getType(), changedIdentificationCard.getType());
-    Assert.assertEquals(updatedIdentificationCard.getIssuer(), changedIdentificationCard.getIssuer());
-    Assert.assertEquals(updatedIdentificationCard.getNumber(), changedIdentificationCard.getNumber());
-    Assert.assertEquals(TEST_USER, changedIdentificationCard.getLastModifiedBy());
-  }
-
-  @Test(expected = IdentificationCardNotFoundException.class)
-  public void shouldDeleteIdentificationCard() throws Exception {
-    final Customer customer = CustomerGenerator.createRandomCustomer();
-
-    this.customerManager.createCustomer(customer);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
-
-    final IdentificationCard identificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
-
-    this.customerManager.createIdentificationCard(customer.getIdentifier(), identificationCard);
-
-    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, identificationCard.getNumber());
-
-    this.customerManager.deleteIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
-
-    this.eventRecorder.wait(CustomerEventConstants.DELETE_IDENTIFICATION_CARD, identificationCard.getNumber());
-
-    this.customerManager.findIdentificationCard(customer.getIdentifier(), identificationCard.getNumber());
   }
 
   @Test

@@ -20,6 +20,7 @@ import io.mifos.anubis.annotation.Permittable;
 import io.mifos.core.api.util.UserContextHolder;
 import io.mifos.core.command.gateway.CommandGateway;
 import io.mifos.core.lang.ServiceException;
+import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.PermittableGroupIds;
 import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.catalog.service.internal.service.FieldValueValidator;
@@ -28,6 +29,7 @@ import io.mifos.customer.service.internal.command.*;
 import io.mifos.customer.service.internal.repository.PortraitEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.TaskService;
+import org.apache.commons.lang.RandomStringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Optional;
 
@@ -454,6 +457,120 @@ public class CustomerRestController {
     return ResponseEntity.accepted().build();
   }
 
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<List<IdentificationCardScan>> fetchIdentificationCardScans(@PathVariable("identifier") final String identifier,
+                                                                            @PathVariable("number") final String number) {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+
+    final List<IdentificationCardScan> identificationCardScans = this.customerService.fetchScansByIdentificationCard(number);
+
+    return ResponseEntity.ok(identificationCardScans);
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<IdentificationCardScan> findIdentificationCardScan(@PathVariable("identifier") final String identifier,
+                                                                     @PathVariable("number") final String number,
+                                                                     @PathVariable("scanIdentifier") final String scanIdentifier) {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+
+    final Optional<IdentificationCardScan> identificationCardScan = this.customerService.findIdentificationCardScan(number, scanIdentifier);
+
+    return identificationCardScan
+            .map(ResponseEntity::ok)
+            .orElseThrow(() -> ServiceException.notFound("Identification card scan {0} not found.", number));
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}/image",
+          method = RequestMethod.GET,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<byte[]> fetchIdentificationCardScanImage(@PathVariable("identifier") final String identifier,
+                                          @PathVariable("number") final String number,
+                                          @PathVariable("scanIdentifier") final String scanIdentifier) {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+    this.throwIfIdentificationCardScanNotExists(number, scanIdentifier);
+
+    final Optional<byte[]> image = this.customerService.findIdentificationCardScanImage(number, scanIdentifier);
+
+    return image.map(ResponseEntity::ok)
+            .orElseThrow(() -> ServiceException.notFound("Identification card scan {0} not found.", number));
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans",
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> postIdentificationCardScan(@PathVariable("identifier") final String identifier,
+                                  @PathVariable("number") final String number,
+                                  @RequestParam("scanIdentifier") @ValidIdentifier final String scanIdentifier,
+                                  @RequestParam("description") @Size(max = 4096) final String description,
+                                  @RequestBody final MultipartFile image) throws Exception {
+    this.throwIfCustomerNotExists(identifier);
+    this.throwIfIdentificationCardNotExists(number);
+    this.throwIfInvalidSize(image.getSize());
+    this.throwIfInvalidContentType(image.getContentType());
+
+    if (this.customerService.identificationCardScanExists(number, scanIdentifier)) {
+      throw ServiceException.conflict("Scan {0} already exists.", scanIdentifier);
+    }
+
+    final IdentificationCardScan scan = new IdentificationCardScan();
+    scan.setIdentifier(scanIdentifier);
+    scan.setDescription(description);
+
+    this.commandGateway.process(new CreateIdentificationCardScanCommand(number, scan, image));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
+  @RequestMapping(
+          value = "/customers/{identifier}/identifications/{number}/scans/{scanIdentifier}",
+          method = RequestMethod.DELETE,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> deleteScan(@PathVariable("identifier") final String identifier,
+                  @PathVariable("number") final String number,
+                  @PathVariable("scanIdentifier") final String scanIdentifier) {
+    throwIfCustomerNotExists(identifier);
+    throwIfIdentificationCardNotExists(number);
+
+    this.commandGateway.process(new DeleteIdentificationCardScanCommand(number, scanIdentifier));
+
+    return ResponseEntity.accepted().build();
+  }
+
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.PORTRAIT)
   @RequestMapping(
       value = "/customers/{identifier}/portrait",
@@ -486,17 +603,8 @@ public class CustomerRestController {
     }
 
     this.throwIfCustomerNotExists(identifier);
-
-    final Long maxSize = this.environment.getProperty("upload.image.max-size", Long.class);
-
-    if(portrait.getSize() > maxSize) {
-      throw ServiceException.badRequest("Portrait can't exceed size of {0}", maxSize);
-    }
-
-    if(!portrait.getContentType().contains(MediaType.IMAGE_JPEG_VALUE)
-            && !portrait.getContentType().contains(MediaType.IMAGE_PNG_VALUE)) {
-      throw ServiceException.badRequest("Only content type {0} and {1} allowed", MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE);
-    }
+    this.throwIfInvalidSize(portrait.getSize());
+    this.throwIfInvalidContentType(portrait.getContentType());
 
     try {
       this.commandGateway.process(new DeletePortraitCommand(identifier), String.class).get();
@@ -626,6 +734,27 @@ public class CustomerRestController {
   private void throwIfIdentificationCardNotExists(final String number) {
     if (!this.customerService.identificationCardExists(number)) {
       throw ServiceException.notFound("Identification card {0} not found.", number);
+    }
+  }
+
+  private void throwIfIdentificationCardScanNotExists(final String number, final String identifier) {
+    if (!this.customerService.identificationCardScanExists(number, identifier)) {
+      throw ServiceException.notFound("Identification card scan {0} not found.", identifier);
+    }
+  }
+
+  private void throwIfInvalidSize(final Long size) {
+    final Long maxSize = this.environment.getProperty("upload.image.max-size", Long.class);
+
+    if(size > maxSize) {
+      throw ServiceException.badRequest("Image can''t exceed size of {0}", maxSize);
+    }
+  }
+
+  private void throwIfInvalidContentType(final String contentType) {
+    if(!contentType.contains(MediaType.IMAGE_JPEG_VALUE)
+            && !contentType.contains(MediaType.IMAGE_PNG_VALUE)) {
+      throw ServiceException.badRequest("Only content type {0} and {1} allowed", MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE);
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The Mifos Initiative.
+ * Copyright 2016 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer;
+package io.mifos.customer.api.v1.domain;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+public class IdentificationCardScan {
 
-/**
- * @author Myrle Krantz
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TestCustomer.class,
-    TestIdentificationCards.class,
-    TestInfrastructure.class,
-    TestTaskDefinition.class,
-    TestTaskInstance.class,
-})
-public class TestSuite extends SuiteTestEnvironment {
+  private String identifier;
+
+  private String description;
+
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
 }

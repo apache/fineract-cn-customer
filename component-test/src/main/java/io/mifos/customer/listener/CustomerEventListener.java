@@ -18,6 +18,7 @@ package io.mifos.customer.listener;
 import io.mifos.core.lang.config.TenantHeaderFilter;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
+import io.mifos.customer.api.v1.events.ScanEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Header;
@@ -140,6 +141,24 @@ public class CustomerEventListener {
   public void identificationCardDeletedEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                              final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_IDENTIFICATION_CARD, payload, String.class);
+  }
+
+  @JmsListener(
+          destination = CustomerEventConstants.DESTINATION,
+          selector = CustomerEventConstants.SELECTOR_POST_IDENTIFICATION_CARD_SCAN
+  )
+  public void identificationCardScanCreateEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                                            final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.POST_IDENTIFICATION_CARD_SCAN, payload, ScanEvent.class);
+  }
+
+  @JmsListener(
+          destination = CustomerEventConstants.DESTINATION,
+          selector = CustomerEventConstants.SELECTOR_DELETE_IDENTIFICATION_CARD_SCAN
+  )
+  public void identificationCardScanDeleteEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                                                final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_IDENTIFICATION_CARD_SCAN, payload, ScanEvent.class);
   }
 
   @JmsListener(
