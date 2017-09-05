@@ -15,5 +15,5 @@
  */
 package io.mifos.customer.api.v1.client;
 
-public final class ScanNotFoundException extends RuntimeException {
+public class PayrollDistributionValidationException extends RuntimeException {
 }

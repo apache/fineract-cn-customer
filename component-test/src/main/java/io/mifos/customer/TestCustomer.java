@@ -16,8 +16,17 @@
 package io.mifos.customer;
 
 import io.mifos.customer.api.v1.CustomerEventConstants;
-import io.mifos.customer.api.v1.client.*;
-import io.mifos.customer.api.v1.domain.*;
+import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
+import io.mifos.customer.api.v1.client.CustomerNotFoundException;
+import io.mifos.customer.api.v1.client.CustomerValidationException;
+import io.mifos.customer.api.v1.client.PortraitNotFoundException;
+import io.mifos.customer.api.v1.client.PortraitValidationException;
+import io.mifos.customer.api.v1.domain.Address;
+import io.mifos.customer.api.v1.domain.Command;
+import io.mifos.customer.api.v1.domain.ContactDetail;
+import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.ProcessStep;
 import io.mifos.customer.util.AddressGenerator;
 import io.mifos.customer.util.CommandGenerator;
 import io.mifos.customer.util.ContactDetailGenerator;

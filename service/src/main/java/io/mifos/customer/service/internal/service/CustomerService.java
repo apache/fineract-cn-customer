@@ -15,14 +15,42 @@
  */
 package io.mifos.customer.service.internal.service;
 
-import io.mifos.customer.api.v1.domain.*;
+import io.mifos.customer.api.v1.domain.Command;
+import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.domain.IdentificationCardScan;
+import io.mifos.customer.api.v1.domain.PayrollDistribution;
+import io.mifos.customer.api.v1.domain.ProcessStep;
+import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
 import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.mapper.*;
-import io.mifos.customer.service.internal.repository.*;
+import io.mifos.customer.service.internal.mapper.AddressMapper;
+import io.mifos.customer.service.internal.mapper.CommandMapper;
+import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
+import io.mifos.customer.service.internal.mapper.CustomerMapper;
+import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
+import io.mifos.customer.service.internal.mapper.IdentificationCardScanMapper;
+import io.mifos.customer.service.internal.mapper.PayrollDistributionMapper;
+import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
+import io.mifos.customer.service.internal.repository.CommandEntity;
+import io.mifos.customer.service.internal.repository.CommandRepository;
+import io.mifos.customer.service.internal.repository.ContactDetailEntity;
+import io.mifos.customer.service.internal.repository.ContactDetailRepository;
+import io.mifos.customer.service.internal.repository.CustomerEntity;
+import io.mifos.customer.service.internal.repository.CustomerRepository;
+import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
+import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
+import io.mifos.customer.service.internal.repository.IdentificationCardScanEntity;
+import io.mifos.customer.service.internal.repository.IdentificationCardScanRepository;
+import io.mifos.customer.service.internal.repository.PayrollDistributionRepository;
+import io.mifos.customer.service.internal.repository.PortraitEntity;
+import io.mifos.customer.service.internal.repository.PortraitRepository;
+import io.mifos.customer.service.internal.repository.TaskDefinitionRepository;
+import io.mifos.customer.service.internal.repository.TaskInstanceRepository;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +77,7 @@ public class CustomerService {
   private final CommandRepository commandRepository;
   private final TaskDefinitionRepository taskDefinitionRepository;
   private final TaskInstanceRepository taskInstanceRepository;
+  private final PayrollDistributionRepository payrollDistributionRepository;
 
   @Autowired
   public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
@@ -60,7 +89,8 @@ public class CustomerService {
                          final FieldValueRepository fieldValueRepository,
                          final CommandRepository commandRepository,
                          final TaskDefinitionRepository taskDefinitionRepository,
-                         final TaskInstanceRepository taskInstanceRepository) {
+                         final TaskInstanceRepository taskInstanceRepository,
+                         final PayrollDistributionRepository payrollDistributionRepository) {
     super();
     this.logger = logger;
     this.customerRepository = customerRepository;
@@ -72,6 +102,7 @@ public class CustomerService {
     this.commandRepository = commandRepository;
     this.taskDefinitionRepository = taskDefinitionRepository;
     this.taskInstanceRepository = taskInstanceRepository;
+    this.payrollDistributionRepository = payrollDistributionRepository;
   }
 
   public Boolean customerExists(final String identifier) {
@@ -262,5 +293,10 @@ public class CustomerService {
     processStep.setTaskDefinitions(taskDefinitions);
 
     return processStep;
+  }
+
+  public Optional<PayrollDistribution> getPayrollDistribution(final String customerIdentifier) {
+    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(customerIdentifier);
+    return this.payrollDistributionRepository.findByCustomer(customerEntity).map(PayrollDistributionMapper::map);
   }
 }

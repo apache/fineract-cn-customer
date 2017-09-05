@@ -22,14 +22,43 @@ import io.mifos.core.command.gateway.CommandGateway;
 import io.mifos.core.lang.ServiceException;
 import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.PermittableGroupIds;
-import io.mifos.customer.api.v1.domain.*;
+import io.mifos.customer.api.v1.domain.Address;
+import io.mifos.customer.api.v1.domain.Command;
+import io.mifos.customer.api.v1.domain.ContactDetail;
+import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.domain.IdentificationCardScan;
+import io.mifos.customer.api.v1.domain.PayrollDistribution;
+import io.mifos.customer.api.v1.domain.ProcessStep;
+import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.catalog.service.internal.service.FieldValueValidator;
 import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.command.*;
+import io.mifos.customer.service.internal.command.ActivateCustomerCommand;
+import io.mifos.customer.service.internal.command.AddTaskDefinitionToCustomerCommand;
+import io.mifos.customer.service.internal.command.CloseCustomerCommand;
+import io.mifos.customer.service.internal.command.CreateCustomerCommand;
+import io.mifos.customer.service.internal.command.CreateIdentificationCardCommand;
+import io.mifos.customer.service.internal.command.CreateIdentificationCardScanCommand;
+import io.mifos.customer.service.internal.command.CreatePortraitCommand;
+import io.mifos.customer.service.internal.command.CreateTaskDefinitionCommand;
+import io.mifos.customer.service.internal.command.DeleteIdentificationCardCommand;
+import io.mifos.customer.service.internal.command.DeleteIdentificationCardScanCommand;
+import io.mifos.customer.service.internal.command.DeletePortraitCommand;
+import io.mifos.customer.service.internal.command.ExecuteTaskForCustomerCommand;
+import io.mifos.customer.service.internal.command.InitializeServiceCommand;
+import io.mifos.customer.service.internal.command.LockCustomerCommand;
+import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
+import io.mifos.customer.service.internal.command.SetPayrollDistributionCommand;
+import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
+import io.mifos.customer.service.internal.command.UpdateAddressCommand;
+import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
+import io.mifos.customer.service.internal.command.UpdateCustomerCommand;
+import io.mifos.customer.service.internal.command.UpdateIdentificationCardCommand;
+import io.mifos.customer.service.internal.command.UpdateTaskDefinitionCommand;
 import io.mifos.customer.service.internal.repository.PortraitEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.TaskService;
-import org.apache.commons.lang.RandomStringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,7 +68,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
@@ -709,6 +744,38 @@ public class CustomerRestController {
   ResponseEntity<List<ProcessStep>> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier) {
     this.throwIfCustomerNotExists(customerIdentifier);
     return ResponseEntity.ok(this.customerService.getProcessSteps(customerIdentifier));
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "customer/{identifier}/payroll",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> setPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier,
+                                              @RequestBody @Valid final PayrollDistribution payrollDistribution) {
+    this.throwIfCustomerNotExists(customerIdentifier);
+    this.commandGateway.process(new SetPayrollDistributionCommand(customerIdentifier, payrollDistribution));
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+      value = "customer/{identifier}/payroll",
+      method = RequestMethod.GET,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.ALL_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<PayrollDistribution> getPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier) {
+    this.throwIfCustomerNotExists(customerIdentifier);
+    return ResponseEntity.ok(
+        this.customerService.getPayrollDistribution(customerIdentifier).orElse(null)
+    );
   }
 
   private Pageable createPageRequest(final Integer pageIndex, final Integer size, final String sortColumn, final String sortDirection) {

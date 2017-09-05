@@ -19,9 +19,9 @@ import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
 import io.mifos.customer.service.internal.repository.CustomerEntity;
 import io.mifos.customer.service.internal.repository.CustomerRepository;
+import io.mifos.customer.service.internal.repository.TaskDefinitionEntity;
 import io.mifos.customer.service.internal.repository.TaskDefinitionRepository;
 import io.mifos.customer.service.internal.repository.TaskInstanceRepository;
-import io.mifos.customer.service.internal.repository.TaskDefinitionEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

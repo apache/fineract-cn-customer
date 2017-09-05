@@ -19,13 +19,27 @@ import io.mifos.core.api.annotation.ThrowsException;
 import io.mifos.core.api.annotation.ThrowsExceptions;
 import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.api.v1.config.CustomerFeignClientConfig;
-import io.mifos.customer.api.v1.domain.*;
+import io.mifos.customer.api.v1.domain.Address;
+import io.mifos.customer.api.v1.domain.Command;
+import io.mifos.customer.api.v1.domain.ContactDetail;
+import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.CustomerPage;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
+import io.mifos.customer.api.v1.domain.IdentificationCardScan;
+import io.mifos.customer.api.v1.domain.PayrollDistribution;
+import io.mifos.customer.api.v1.domain.ProcessStep;
+import io.mifos.customer.api.v1.domain.TaskDefinition;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -379,4 +393,28 @@ public interface CustomerManager {
   )
   @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
   List<ProcessStep> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier);
+
+  @RequestMapping(
+      value = "/customer/{identifier}/payroll",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = PayrollDistributionValidationException.class)
+  })
+  void setPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier,
+                              @RequestBody @Valid final PayrollDistribution payrollDistribution);
+
+  @RequestMapping(
+      value = "/customer/{identifier}/payroll",
+      method = RequestMethod.GET,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
+  })
+  PayrollDistribution getPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier);
 }

@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer.api.v1.client;
+package io.mifos.customer.service.internal.repository;
 
-public final class ScanNotFoundException extends RuntimeException {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface PayrollDistributionRepository extends JpaRepository<PayrollDistributionEntity, Long> {
+  Optional<PayrollDistributionEntity> findByCustomer(final CustomerEntity customerEntity);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Mifos Initiative.
+ * Copyright 2017 The Mifos Initiative.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,18 @@
 package io.mifos.customer.service.internal.repository;
 
 import io.mifos.core.mariadb.util.LocalDateTimeConverter;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
