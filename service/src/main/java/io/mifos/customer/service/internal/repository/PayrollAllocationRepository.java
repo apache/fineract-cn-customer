@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer.api.v1.client;
+package io.mifos.customer.service.internal.repository;
 
-public final class ScanNotFoundException extends RuntimeException {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PayrollAllocationRepository extends JpaRepository<PayrollAllocationEntity, Long> {
+  void deleteByPayrollDistribution(final PayrollDistributionEntity payrollDistributionEntity);
 }

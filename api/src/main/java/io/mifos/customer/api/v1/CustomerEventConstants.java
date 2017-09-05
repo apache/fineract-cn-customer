@@ -46,6 +46,7 @@ public interface CustomerEventConstants {
 
   String POST_PORTRAIT = "post-portrait";
   String DELETE_PORTRAIT = "delete-portrait";
+  String PUT_PAYROLL_DISTRIBUTION = "put-payroll-distribution";
 
   String SELECTOR_INITIALIZE = SELECTOR_NAME + " = '" + INITIALIZE + "'";
 
@@ -72,4 +73,6 @@ public interface CustomerEventConstants {
 
   String SELECTOR_PUT_PORTRAIT = SELECTOR_NAME + " = '" + POST_PORTRAIT + "'";
   String SELECTOR_DELETE_PORTRAIT = SELECTOR_NAME + " = '" + DELETE_PORTRAIT + "'";
+
+  String SELECTOR_PUT_PAYROLL_DISTRIBUTION = SELECTOR_NAME + " = '" + PUT_PAYROLL_DISTRIBUTION + "'";
 }

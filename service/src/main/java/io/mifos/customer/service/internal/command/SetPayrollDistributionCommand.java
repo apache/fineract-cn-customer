@@ -15,20 +15,24 @@
  */
 package io.mifos.customer.service.internal.command;
 
-public class DeleteIdentificationCardScanCommand {
+import io.mifos.customer.api.v1.domain.PayrollDistribution;
 
-  private final String number;
+public class SetPayrollDistributionCommand {
+  private final String customerIdentifier;
+  private final PayrollDistribution payrollDistribution;
 
-  private final String scanIdentifier;
-
-  public DeleteIdentificationCardScanCommand(final String number, final String scanIdentifier) {
-    this.number = number;
-    this.scanIdentifier = scanIdentifier;
+  public SetPayrollDistributionCommand(final String customerIdentifier,
+                                       final PayrollDistribution payrollDistribution) {
+    super();
+    this.customerIdentifier = customerIdentifier;
+    this.payrollDistribution = payrollDistribution;
   }
 
-  public String number() { return number; }
+  public String customerIdentifier() {
+    return this.customerIdentifier;
+  }
 
-  public String scanIdentifier() {
-    return scanIdentifier;
+  public PayrollDistribution payrollDistribution() {
+    return this.payrollDistribution;
   }
 }

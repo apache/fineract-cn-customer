@@ -18,8 +18,8 @@ package io.mifos.customer.service.internal.mapper;
 import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.domain.TaskInstance;
 import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.TaskInstanceEntity;
 import io.mifos.customer.service.internal.repository.TaskDefinitionEntity;
+import io.mifos.customer.service.internal.repository.TaskInstanceEntity;
 
 public class TaskInstanceMapper {
 

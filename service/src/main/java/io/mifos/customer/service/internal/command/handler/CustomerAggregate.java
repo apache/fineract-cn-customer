@@ -24,6 +24,7 @@ import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.PayrollDistribution;
 import io.mifos.customer.api.v1.events.ScanEvent;
 import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
 import io.mifos.customer.catalog.service.internal.repository.CatalogRepository;
@@ -31,10 +32,52 @@ import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
-import io.mifos.customer.service.internal.command.*;
-import io.mifos.customer.service.internal.mapper.*;
-import io.mifos.customer.service.internal.repository.*;
+import io.mifos.customer.service.ServiceConstants;
+import io.mifos.customer.service.internal.command.ActivateCustomerCommand;
+import io.mifos.customer.service.internal.command.CloseCustomerCommand;
+import io.mifos.customer.service.internal.command.CreateCustomerCommand;
+import io.mifos.customer.service.internal.command.CreateIdentificationCardCommand;
+import io.mifos.customer.service.internal.command.CreateIdentificationCardScanCommand;
+import io.mifos.customer.service.internal.command.CreatePortraitCommand;
+import io.mifos.customer.service.internal.command.DeleteIdentificationCardCommand;
+import io.mifos.customer.service.internal.command.DeleteIdentificationCardScanCommand;
+import io.mifos.customer.service.internal.command.DeletePortraitCommand;
+import io.mifos.customer.service.internal.command.LockCustomerCommand;
+import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
+import io.mifos.customer.service.internal.command.SetPayrollDistributionCommand;
+import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
+import io.mifos.customer.service.internal.command.UpdateAddressCommand;
+import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
+import io.mifos.customer.service.internal.command.UpdateCustomerCommand;
+import io.mifos.customer.service.internal.command.UpdateIdentificationCardCommand;
+import io.mifos.customer.service.internal.mapper.AddressMapper;
+import io.mifos.customer.service.internal.mapper.CommandMapper;
+import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
+import io.mifos.customer.service.internal.mapper.CustomerMapper;
+import io.mifos.customer.service.internal.mapper.FieldValueMapper;
+import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
+import io.mifos.customer.service.internal.mapper.IdentificationCardScanMapper;
+import io.mifos.customer.service.internal.mapper.PortraitMapper;
+import io.mifos.customer.service.internal.repository.AddressEntity;
+import io.mifos.customer.service.internal.repository.AddressRepository;
+import io.mifos.customer.service.internal.repository.CommandRepository;
+import io.mifos.customer.service.internal.repository.ContactDetailEntity;
+import io.mifos.customer.service.internal.repository.ContactDetailRepository;
+import io.mifos.customer.service.internal.repository.CustomerEntity;
+import io.mifos.customer.service.internal.repository.CustomerRepository;
+import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
+import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
+import io.mifos.customer.service.internal.repository.IdentificationCardScanEntity;
+import io.mifos.customer.service.internal.repository.IdentificationCardScanRepository;
+import io.mifos.customer.service.internal.repository.PayrollAllocationEntity;
+import io.mifos.customer.service.internal.repository.PayrollAllocationRepository;
+import io.mifos.customer.service.internal.repository.PayrollDistributionEntity;
+import io.mifos.customer.service.internal.repository.PayrollDistributionRepository;
+import io.mifos.customer.service.internal.repository.PortraitEntity;
+import io.mifos.customer.service.internal.repository.PortraitRepository;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,6 +94,7 @@ import java.util.stream.Collectors;
 @Aggregate
 public class CustomerAggregate {
 
+  private final Logger logger;
   private final AddressRepository addressRepository;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
@@ -62,9 +106,12 @@ public class CustomerAggregate {
   private final FieldRepository fieldRepository;
   private final CommandRepository commandRepository;
   private final TaskAggregate taskAggregate;
+  private final PayrollDistributionRepository payrollDistributionRepository;
+  private final PayrollAllocationRepository payrollAllocationRepository;
 
   @Autowired
-  public CustomerAggregate(final AddressRepository addressRepository,
+  public CustomerAggregate(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
+                           final AddressRepository addressRepository,
                            final CustomerRepository customerRepository,
                            final IdentificationCardRepository identificationCardRepository,
                            final IdentificationCardScanRepository identificationCardScanRepository,
@@ -74,8 +121,11 @@ public class CustomerAggregate {
                            final CatalogRepository catalogRepository,
                            final FieldRepository fieldRepository,
                            final CommandRepository commandRepository,
-                           final TaskAggregate taskAggregate) {
+                           final TaskAggregate taskAggregate,
+                           final PayrollDistributionRepository payrollDistributionRepository,
+                           final PayrollAllocationRepository payrollAllocationRepository) {
     super();
+    this.logger = logger;
     this.addressRepository = addressRepository;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
@@ -87,6 +137,8 @@ public class CustomerAggregate {
     this.fieldRepository = fieldRepository;
     this.commandRepository = commandRepository;
     this.taskAggregate = taskAggregate;
+    this.payrollDistributionRepository = payrollDistributionRepository;
+    this.payrollAllocationRepository = payrollAllocationRepository;
   }
 
   @Transactional
@@ -494,6 +546,55 @@ public class CustomerAggregate {
     this.customerRepository.save(customerEntity);
 
     return deletePortraitCommand.identifier();
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_PAYROLL_DISTRIBUTION)
+  public String setPayrollDistribution(final SetPayrollDistributionCommand setPayrollDistributionCommand) {
+    final CustomerEntity customerEntity =
+        this.customerRepository.findByIdentifier(setPayrollDistributionCommand.customerIdentifier());
+
+    final LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+
+    final PayrollDistributionEntity payrollDistributionEntity =
+        this.payrollDistributionRepository.findByCustomer(customerEntity).orElseGet(() -> {
+          final PayrollDistributionEntity newPayrollDistribution = new PayrollDistributionEntity();
+          newPayrollDistribution.setCustomer(customerEntity);
+          newPayrollDistribution.setCreatedBy(UserContextHolder.checkedGetUser());
+          newPayrollDistribution.setCreatedOn(now);
+          return newPayrollDistribution;
+        });
+
+    if (payrollDistributionEntity.getId() != null) {
+      this.payrollAllocationRepository.deleteByPayrollDistribution(payrollDistributionEntity);
+      this.payrollAllocationRepository.flush();
+
+      payrollDistributionEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
+      payrollDistributionEntity.setLastModifiedOn(now);
+      payrollDistributionEntity.setPayrollAllocationEntities(null);
+    }
+
+    final PayrollDistribution payrollDistribution = setPayrollDistributionCommand.payrollDistribution();
+    payrollDistributionEntity.setMainAccountNumber(payrollDistribution.getMainAccountNumber());
+
+    final PayrollDistributionEntity savedPayrollDistributionEntity =
+        this.payrollDistributionRepository.save(payrollDistributionEntity);
+
+    this.payrollAllocationRepository.save(payrollDistribution.getPayrollAllocations()
+        .stream()
+        .map(payrollAllocation -> {
+          final PayrollAllocationEntity payrollAllocationEntity = new PayrollAllocationEntity();
+          payrollAllocationEntity.setPayrollDistribution(savedPayrollDistributionEntity);
+          payrollAllocationEntity.setAccountNumber(payrollAllocation.getAccountNumber());
+          payrollAllocationEntity.setAmount(payrollAllocation.getAmount());
+          payrollAllocationEntity.setProportional(payrollAllocation.getProportional());
+          return payrollAllocationEntity;
+        })
+        .collect(Collectors.toList())
+    );
+
+    return setPayrollDistributionCommand.customerIdentifier();
   }
 
   private void setCustomValues(final Customer customer, final CustomerEntity savedCustomerEntity) {
