@@ -79,7 +79,7 @@ public class TaskAggregate {
     final TaskDefinition updatedTaskDefinition = updateTaskDefinitionCommand.taskDefinition();
     taskDefinitionEntity.setName(updatedTaskDefinition.getName());
     taskDefinitionEntity.setDescription(updatedTaskDefinition.getDescription());
-    taskDefinitionEntity.setAssignedCommands(StringUtils.join(updatedTaskDefinition.getCommands(), ","));
+    taskDefinitionEntity.setAssignedCommands(StringUtils.join(updatedTaskDefinition.getCommands(), ";"));
     taskDefinitionEntity.setMandatory(updatedTaskDefinition.getMandatory());
     taskDefinitionEntity.setPredefined(updatedTaskDefinition.getPredefined());
 
@@ -153,8 +153,7 @@ public class TaskAggregate {
       return taskInstanceEntities
           .stream()
               .filter(taskInstanceEntity -> taskInstanceEntity.getTaskDefinition().isMandatory())
-              .filter(taskInstanceEntity -> taskInstanceEntity.getExecutedBy() == null)
-          .findAny().isPresent();
+              .anyMatch(taskInstanceEntity -> taskInstanceEntity.getExecutedBy() == null);
     } else {
       return false;
     }
