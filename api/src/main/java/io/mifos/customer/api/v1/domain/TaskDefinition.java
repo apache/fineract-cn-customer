@@ -16,6 +16,7 @@
 package io.mifos.customer.api.v1.domain;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ public final class TaskDefinition {
   private String identifier;
   @NotNull
   private Type type;
+  @NotEmpty
   private Set<Command> commands;
   @NotBlank
   private String name;
