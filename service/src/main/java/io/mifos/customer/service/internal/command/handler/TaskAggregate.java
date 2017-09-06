@@ -145,13 +145,14 @@ public class TaskAggregate {
   }
 
   @Transactional
-  public Boolean openTasksForCustomerExist(final CustomerEntity customerEntity) {
+  public Boolean openTasksForCustomerExist(final CustomerEntity customerEntity, final String command) {
     final List<TaskInstanceEntity> taskInstanceEntities = this.taskInstanceRepository.findByCustomer(customerEntity);
 
     //noinspection SimplifiableIfStatement
     if (taskInstanceEntities != null) {
       return taskInstanceEntities
           .stream()
+              .filter(taskInstanceEntity -> taskInstanceEntity.getTaskDefinition().getAssignedCommands().contains(command))
               .filter(taskInstanceEntity -> taskInstanceEntity.getTaskDefinition().isMandatory())
               .anyMatch(taskInstanceEntity -> taskInstanceEntity.getExecutedBy() == null);
     } else {

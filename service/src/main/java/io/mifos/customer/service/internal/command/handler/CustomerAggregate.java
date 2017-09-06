@@ -231,7 +231,7 @@ public class CustomerAggregate {
   public String activateCustomer(final ActivateCustomerCommand activateCustomerCommand) {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(activateCustomerCommand.identifier());
 
-    if (this.taskAggregate.openTasksForCustomerExist(customerEntity)) {
+    if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.ACTIVATE.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", activateCustomerCommand.identifier());
     }
 
@@ -274,7 +274,7 @@ public class CustomerAggregate {
   public String unlockCustomer(final UnlockCustomerCommand unlockCustomerCommand) {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(unlockCustomerCommand.identifier());
 
-    if (this.taskAggregate.openTasksForCustomerExist(customerEntity)) {
+    if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.UNLOCK.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", unlockCustomerCommand.identifier());
     }
 
@@ -317,7 +317,7 @@ public class CustomerAggregate {
   public String reopenCustomer(final ReopenCustomerCommand reopenCustomerCommand) {
     final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(reopenCustomerCommand.identifier());
 
-    if (this.taskAggregate.openTasksForCustomerExist(customerEntity)) {
+    if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.REOPEN.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", reopenCustomerCommand.identifier());
     }
 
