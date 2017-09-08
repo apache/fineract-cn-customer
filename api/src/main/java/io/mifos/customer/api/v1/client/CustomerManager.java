@@ -386,7 +386,7 @@ public interface CustomerManager {
   void updateTask(@PathVariable("identifier") final String identifier, @RequestBody final TaskDefinition taskDefinition);
 
   @RequestMapping(
-      value = "/customer/{identifier}/actions",
+      value = "/customers/{identifier}/actions",
       method = RequestMethod.GET,
       produces = MediaType.ALL_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
@@ -395,7 +395,7 @@ public interface CustomerManager {
   List<ProcessStep> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier);
 
   @RequestMapping(
-      value = "/customer/{identifier}/payroll",
+      value = "/customers/{identifier}/payroll",
       method = RequestMethod.PUT,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
@@ -408,7 +408,7 @@ public interface CustomerManager {
                               @RequestBody @Valid final PayrollDistribution payrollDistribution);
 
   @RequestMapping(
-      value = "/customer/{identifier}/payroll",
+      value = "/customers/{identifier}/payroll",
       method = RequestMethod.GET,
       produces = MediaType.ALL_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE

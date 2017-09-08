@@ -19,6 +19,7 @@ import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.TaskExecutionException;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.util.CustomerGenerator;
 import io.mifos.customer.util.IdentificationCardGenerator;
@@ -72,8 +73,9 @@ public class TestTaskInstance extends AbstractCustomerTest {
     }
 
     // set the ID card for the customer
-    this.customerManager.createIdentificationCard(randomCustomer.getIdentifier(), IdentificationCardGenerator.createRandomIdentificationCard());
-    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, randomCustomer.getIdentifier());
+    final IdentificationCard randomIdentificationCard = IdentificationCardGenerator.createRandomIdentificationCard();
+    this.customerManager.createIdentificationCard(randomCustomer.getIdentifier(), randomIdentificationCard);
+    this.eventRecorder.wait(CustomerEventConstants.POST_IDENTIFICATION_CARD, randomIdentificationCard.getNumber());
 
     // close the task
     this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), taskDefinition.getIdentifier());
@@ -120,4 +122,71 @@ public class TestTaskInstance extends AbstractCustomerTest {
     Assert.assertEquals(1, tasksForCustomer.size());
   }
 
+  @Test
+  public void shouldUnlockCustomerMultipleTasks() throws Exception{
+    final TaskDefinition customTask1 = new TaskDefinition();
+    customTask1.setIdentifier("custom-task-1");
+    customTask1.setType(TaskDefinition.Type.CUSTOM.name());
+    customTask1.setName("Do the barrel roll");
+    customTask1.setCommands(
+        TaskDefinition.Command.ACTIVATE.name(),
+        TaskDefinition.Command.UNLOCK.name()
+    );
+    customTask1.setPredefined(Boolean.TRUE);
+    customTask1.setMandatory(Boolean.TRUE);
+
+    this.customerManager.createTask(customTask1);
+    this.eventRecorder.wait(CustomerEventConstants.POST_TASK, customTask1.getIdentifier());
+
+    final TaskDefinition customTask2 = new TaskDefinition();
+    customTask2.setIdentifier("custom-task-2");
+    customTask2.setType(TaskDefinition.Type.CUSTOM.name());
+    customTask2.setName("Do the barrel roll");
+    customTask2.setCommands(
+        TaskDefinition.Command.ACTIVATE.name(),
+        TaskDefinition.Command.UNLOCK.name()
+    );
+    customTask2.setPredefined(Boolean.TRUE);
+    customTask2.setMandatory(Boolean.TRUE);
+
+    this.customerManager.createTask(customTask2);
+    this.eventRecorder.wait(CustomerEventConstants.POST_TASK, customTask2.getIdentifier());
+
+    // create a random customer
+    final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
+    this.customerManager.createCustomer(randomCustomer);
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
+
+    // close the task
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), customTask1.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
+
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), customTask2.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
+
+    final Command activateCustomer = new Command();
+    activateCustomer.setAction(Command.Action.ACTIVATE.name());
+    this.customerManager.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.ACTIVATE_CUSTOMER, randomCustomer.getIdentifier()));
+
+    final Command lockCustomer = new Command();
+    lockCustomer.setAction(Command.Action.LOCK.name());
+    this.customerManager.customerCommand(randomCustomer.getIdentifier(), lockCustomer);
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.LOCK_CUSTOMER, randomCustomer.getIdentifier()));
+
+    // close the task
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), customTask1.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
+
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), customTask2.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
+
+    final Command unlockCustomer = new Command();
+    unlockCustomer.setAction(Command.Action.UNLOCK.name());
+    this.customerManager.customerCommand(randomCustomer.getIdentifier(), unlockCustomer);
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.UNLOCK_CUSTOMER, randomCustomer.getIdentifier()));
+
+    final Customer customer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
+    Assert.assertEquals(Customer.State.ACTIVE.name(), customer.getCurrentState());
+  }
 }
