@@ -114,8 +114,9 @@ public class TaskAggregate {
       final Optional<TaskInstanceEntity> taskInstanceEntityOptional = taskInstanceEntities
           .stream()
           .filter(
-              taskInstanceEntity -> taskInstanceEntity.getTaskDefinition().getIdentifier()
-                  .equals(executeTaskForCustomerCommand.taskIdentifier()))
+              taskInstanceEntity -> taskInstanceEntity.getTaskDefinition().getIdentifier().equals(executeTaskForCustomerCommand.taskIdentifier())
+                  && taskInstanceEntity.getExecutedBy() == null
+          )
           .findAny();
 
       if (taskInstanceEntityOptional.isPresent()) {

@@ -734,7 +734,7 @@ public class CustomerRestController {
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
   @RequestMapping(
-      value = "/customer/{identifier}/actions",
+      value = "/customers/{identifier}/actions",
       method = RequestMethod.GET,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.ALL_VALUE
@@ -748,7 +748,7 @@ public class CustomerRestController {
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
   @RequestMapping(
-      value = "customer/{identifier}/payroll",
+      value = "/customers/{identifier}/payroll",
       method = RequestMethod.PUT,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
@@ -764,7 +764,7 @@ public class CustomerRestController {
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
   @RequestMapping(
-      value = "customer/{identifier}/payroll",
+      value = "/customers/{identifier}/payroll",
       method = RequestMethod.GET,
       produces = MediaType.APPLICATION_JSON_VALUE,
       consumes = MediaType.ALL_VALUE
