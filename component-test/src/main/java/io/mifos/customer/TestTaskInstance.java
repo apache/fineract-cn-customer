@@ -164,6 +164,8 @@ public class TestTaskInstance extends AbstractCustomerTest {
     this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), customTask2.getIdentifier());
     this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
 
+    this.eventRecorder.clear();
+
     final Command activateCustomer = new Command();
     activateCustomer.setAction(Command.Action.ACTIVATE.name());
     this.customerManager.customerCommand(randomCustomer.getIdentifier(), activateCustomer);
@@ -188,5 +190,14 @@ public class TestTaskInstance extends AbstractCustomerTest {
 
     final Customer customer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), customer.getCurrentState());
+
+    // set predefined to false so it does not have a side effect on other tests
+    customTask1.setPredefined(false);
+    this.customerManager.updateTask(customTask1.getIdentifier(), customTask1);
+    this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, customTask1.getIdentifier());
+
+    customTask2.setPredefined(false);
+    this.customerManager.updateTask(customTask2.getIdentifier(), customTask1);
+    this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, customTask2.getIdentifier());
   }
 }
