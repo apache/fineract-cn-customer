@@ -178,13 +178,4 @@ public class CustomerEventListener {
                                final String payload) {
     this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_PORTRAIT, payload, String.class);
   }
-
-  @JmsListener(
-      destination = CustomerEventConstants.DESTINATION,
-      selector = CustomerEventConstants.SELECTOR_PUT_PAYROLL_DISTRIBUTION
-  )
-  public void onSetPayrollDistribution(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
-                                       final String payload) {
-    this.eventRecorder.event(tenant, CustomerEventConstants.PUT_PAYROLL_DISTRIBUTION, payload, String.class);
-  }
 }

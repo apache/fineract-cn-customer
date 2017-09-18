@@ -26,7 +26,6 @@ import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.api.v1.domain.IdentificationCardScan;
-import io.mifos.customer.api.v1.domain.PayrollDistribution;
 import io.mifos.customer.api.v1.domain.ProcessStep;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -393,28 +391,4 @@ public interface CustomerManager {
   )
   @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
   List<ProcessStep> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier);
-
-  @RequestMapping(
-      value = "/customers/{identifier}/payroll",
-      method = RequestMethod.PUT,
-      produces = MediaType.APPLICATION_JSON_VALUE,
-      consumes = MediaType.APPLICATION_JSON_VALUE
-  )
-  @ThrowsExceptions({
-      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
-      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = PayrollDistributionValidationException.class)
-  })
-  void setPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier,
-                              @RequestBody @Valid final PayrollDistribution payrollDistribution);
-
-  @RequestMapping(
-      value = "/customers/{identifier}/payroll",
-      method = RequestMethod.GET,
-      produces = MediaType.ALL_VALUE,
-      consumes = MediaType.APPLICATION_JSON_VALUE
-  )
-  @ThrowsExceptions({
-      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class)
-  })
-  PayrollDistribution getPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier);
 }
