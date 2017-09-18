@@ -24,7 +24,6 @@ import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.PayrollDistribution;
 import io.mifos.customer.api.v1.events.ScanEvent;
 import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
 import io.mifos.customer.catalog.service.internal.repository.CatalogRepository;
@@ -44,7 +43,6 @@ import io.mifos.customer.service.internal.command.DeleteIdentificationCardScanCo
 import io.mifos.customer.service.internal.command.DeletePortraitCommand;
 import io.mifos.customer.service.internal.command.LockCustomerCommand;
 import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
-import io.mifos.customer.service.internal.command.SetPayrollDistributionCommand;
 import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
 import io.mifos.customer.service.internal.command.UpdateAddressCommand;
 import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
@@ -69,10 +67,6 @@ import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
 import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
 import io.mifos.customer.service.internal.repository.IdentificationCardScanEntity;
 import io.mifos.customer.service.internal.repository.IdentificationCardScanRepository;
-import io.mifos.customer.service.internal.repository.PayrollAllocationEntity;
-import io.mifos.customer.service.internal.repository.PayrollAllocationRepository;
-import io.mifos.customer.service.internal.repository.PayrollDistributionEntity;
-import io.mifos.customer.service.internal.repository.PayrollDistributionRepository;
 import io.mifos.customer.service.internal.repository.PortraitEntity;
 import io.mifos.customer.service.internal.repository.PortraitRepository;
 import org.slf4j.Logger;
@@ -106,8 +100,6 @@ public class CustomerAggregate {
   private final FieldRepository fieldRepository;
   private final CommandRepository commandRepository;
   private final TaskAggregate taskAggregate;
-  private final PayrollDistributionRepository payrollDistributionRepository;
-  private final PayrollAllocationRepository payrollAllocationRepository;
 
   @Autowired
   public CustomerAggregate(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
@@ -121,9 +113,7 @@ public class CustomerAggregate {
                            final CatalogRepository catalogRepository,
                            final FieldRepository fieldRepository,
                            final CommandRepository commandRepository,
-                           final TaskAggregate taskAggregate,
-                           final PayrollDistributionRepository payrollDistributionRepository,
-                           final PayrollAllocationRepository payrollAllocationRepository) {
+                           final TaskAggregate taskAggregate) {
     super();
     this.logger = logger;
     this.addressRepository = addressRepository;
@@ -137,8 +127,6 @@ public class CustomerAggregate {
     this.fieldRepository = fieldRepository;
     this.commandRepository = commandRepository;
     this.taskAggregate = taskAggregate;
-    this.payrollDistributionRepository = payrollDistributionRepository;
-    this.payrollAllocationRepository = payrollAllocationRepository;
   }
 
   @Transactional
@@ -546,55 +534,6 @@ public class CustomerAggregate {
     this.customerRepository.save(customerEntity);
 
     return deletePortraitCommand.identifier();
-  }
-
-  @Transactional
-  @CommandHandler
-  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_PAYROLL_DISTRIBUTION)
-  public String setPayrollDistribution(final SetPayrollDistributionCommand setPayrollDistributionCommand) {
-    final CustomerEntity customerEntity =
-        this.customerRepository.findByIdentifier(setPayrollDistributionCommand.customerIdentifier());
-
-    final LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
-
-    final PayrollDistributionEntity payrollDistributionEntity =
-        this.payrollDistributionRepository.findByCustomer(customerEntity).orElseGet(() -> {
-          final PayrollDistributionEntity newPayrollDistribution = new PayrollDistributionEntity();
-          newPayrollDistribution.setCustomer(customerEntity);
-          newPayrollDistribution.setCreatedBy(UserContextHolder.checkedGetUser());
-          newPayrollDistribution.setCreatedOn(now);
-          return newPayrollDistribution;
-        });
-
-    if (payrollDistributionEntity.getId() != null) {
-      this.payrollAllocationRepository.deleteByPayrollDistribution(payrollDistributionEntity);
-      this.payrollAllocationRepository.flush();
-
-      payrollDistributionEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
-      payrollDistributionEntity.setLastModifiedOn(now);
-      payrollDistributionEntity.setPayrollAllocationEntities(null);
-    }
-
-    final PayrollDistribution payrollDistribution = setPayrollDistributionCommand.payrollDistribution();
-    payrollDistributionEntity.setMainAccountNumber(payrollDistribution.getMainAccountNumber());
-
-    final PayrollDistributionEntity savedPayrollDistributionEntity =
-        this.payrollDistributionRepository.save(payrollDistributionEntity);
-
-    this.payrollAllocationRepository.save(payrollDistribution.getPayrollAllocations()
-        .stream()
-        .map(payrollAllocation -> {
-          final PayrollAllocationEntity payrollAllocationEntity = new PayrollAllocationEntity();
-          payrollAllocationEntity.setPayrollDistribution(savedPayrollDistributionEntity);
-          payrollAllocationEntity.setAccountNumber(payrollAllocation.getAccountNumber());
-          payrollAllocationEntity.setAmount(payrollAllocation.getAmount());
-          payrollAllocationEntity.setProportional(payrollAllocation.getProportional());
-          return payrollAllocationEntity;
-        })
-        .collect(Collectors.toList())
-    );
-
-    return setPayrollDistributionCommand.customerIdentifier();
   }
 
   private void setCustomValues(final Customer customer, final CustomerEntity savedCustomerEntity) {

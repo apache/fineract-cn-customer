@@ -29,7 +29,6 @@ import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.domain.CustomerPage;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.api.v1.domain.IdentificationCardScan;
-import io.mifos.customer.api.v1.domain.PayrollDistribution;
 import io.mifos.customer.api.v1.domain.ProcessStep;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.catalog.service.internal.service.FieldValueValidator;
@@ -49,7 +48,6 @@ import io.mifos.customer.service.internal.command.ExecuteTaskForCustomerCommand;
 import io.mifos.customer.service.internal.command.InitializeServiceCommand;
 import io.mifos.customer.service.internal.command.LockCustomerCommand;
 import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
-import io.mifos.customer.service.internal.command.SetPayrollDistributionCommand;
 import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
 import io.mifos.customer.service.internal.command.UpdateAddressCommand;
 import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
@@ -744,38 +742,6 @@ public class CustomerRestController {
   ResponseEntity<List<ProcessStep>> fetchProcessSteps(@PathVariable(value = "identifier") final String customerIdentifier) {
     this.throwIfCustomerNotExists(customerIdentifier);
     return ResponseEntity.ok(this.customerService.getProcessSteps(customerIdentifier));
-  }
-
-  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
-  @RequestMapping(
-      value = "/customers/{identifier}/payroll",
-      method = RequestMethod.PUT,
-      produces = MediaType.APPLICATION_JSON_VALUE,
-      consumes = MediaType.APPLICATION_JSON_VALUE
-  )
-  public
-  @ResponseBody
-  ResponseEntity<Void> setPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier,
-                                              @RequestBody @Valid final PayrollDistribution payrollDistribution) {
-    this.throwIfCustomerNotExists(customerIdentifier);
-    this.commandGateway.process(new SetPayrollDistributionCommand(customerIdentifier, payrollDistribution));
-    return ResponseEntity.accepted().build();
-  }
-
-  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
-  @RequestMapping(
-      value = "/customers/{identifier}/payroll",
-      method = RequestMethod.GET,
-      produces = MediaType.APPLICATION_JSON_VALUE,
-      consumes = MediaType.ALL_VALUE
-  )
-  public
-  @ResponseBody
-  ResponseEntity<PayrollDistribution> getPayrollDistribution(@PathVariable(value = "identifier") final String customerIdentifier) {
-    this.throwIfCustomerNotExists(customerIdentifier);
-    return ResponseEntity.ok(
-        this.customerService.getPayrollDistribution(customerIdentifier).orElse(null)
-    );
   }
 
   private Pageable createPageRequest(final Integer pageIndex, final Integer size, final String sortColumn, final String sortDirection) {
