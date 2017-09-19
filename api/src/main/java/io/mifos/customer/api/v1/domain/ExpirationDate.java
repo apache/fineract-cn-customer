@@ -15,16 +15,24 @@
  */
 package io.mifos.customer.api.v1.domain;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public class ExpirationDate {
 
   @NotNull
+  @Min(1000L)
+  @Max(9999L)
   private Integer year;
   @NotNull
+  @Min(1L)
+  @Max(12L)
   private Integer month;
   @NotNull
+  @Min(1L)
+  @Max(31L)
   private Integer day;
 
   public ExpirationDate() {
