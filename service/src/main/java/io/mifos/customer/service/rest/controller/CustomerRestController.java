@@ -307,10 +307,12 @@ public class CustomerRestController {
   @ResponseBody
   ResponseEntity<Void> taskForCustomerExecuted(@PathVariable("identifier") final String identifier,
                                                @PathVariable("taskIdentifier") final String taskIdentifier) {
-    if (this.customerService.customerExists(identifier)) {
-      if (this.taskService.taskDefinitionExists(taskIdentifier)) {
-        final TaskDefinition taskDefinition = this.taskService.findByIdentifier(taskIdentifier).get();
-        final Customer customer;
+    final Optional<Customer> optionalCustomer = this.customerService.findCustomer(identifier);
+    if (optionalCustomer.isPresent()) {
+      final Customer customer = optionalCustomer.get();
+      final Optional<TaskDefinition> optionalTaskDefinition = this.taskService.findByIdentifier(taskIdentifier);
+      if (optionalTaskDefinition.isPresent()) {
+        final TaskDefinition taskDefinition = optionalTaskDefinition.get();
         switch (TaskDefinition.Type.valueOf(taskDefinition.getType())) {
           case ID_CARD:
             final List<IdentificationCard> identificationCards = this.customerService.fetchIdentificationCardsByCustomer(identifier);
@@ -319,8 +321,7 @@ public class CustomerRestController {
             }
             break;
           case FOUR_EYES:
-            customer = this.customerService.findCustomer(identifier).get();
-            if (customer.getAssignedEmployee().equals(UserContextHolder.checkedGetUser())) {
+            if (customer.getCreatedBy().equals(UserContextHolder.checkedGetUser())) {
               throw ServiceException.conflict("Signing user must be different than creator.");
             }
             break;
