@@ -120,6 +120,10 @@ public class TestTaskInstance extends AbstractCustomerTest {
     final List<TaskDefinition> tasksForCustomer = this.customerManager.findTasksForCustomer(randomCustomer.getIdentifier(), false);
 
     Assert.assertEquals(1, tasksForCustomer.size());
+
+    taskDefinition.setPredefined(false);
+    this.customerManager.updateTask(taskDefinition.getIdentifier(), taskDefinition);
+    this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, taskDefinition.getIdentifier());
   }
 
   @Test
@@ -197,7 +201,34 @@ public class TestTaskInstance extends AbstractCustomerTest {
     this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, customTask1.getIdentifier());
 
     customTask2.setPredefined(false);
-    this.customerManager.updateTask(customTask2.getIdentifier(), customTask1);
+    this.customerManager.updateTask(customTask2.getIdentifier(), customTask2);
     this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, customTask2.getIdentifier());
+  }
+
+  @Test(expected = TaskExecutionException.class)
+  public void shouldNotProceedFourEyesWrongSigner() throws Exception {
+    final TaskDefinition fourEyesTask = new TaskDefinition();
+    fourEyesTask.setIdentifier("4-eyes-task-1");
+    fourEyesTask.setType(TaskDefinition.Type.FOUR_EYES.name());
+    fourEyesTask.setName("Do the barrel roll");
+    fourEyesTask.setCommands(
+        TaskDefinition.Command.ACTIVATE.name()
+    );
+    fourEyesTask.setPredefined(Boolean.TRUE);
+    fourEyesTask.setMandatory(Boolean.TRUE);
+
+    this.customerManager.createTask(fourEyesTask);
+    this.eventRecorder.wait(CustomerEventConstants.POST_TASK, fourEyesTask.getIdentifier());
+
+    final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
+    this.customerManager.createCustomer(randomCustomer);
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
+
+    this.customerManager.taskForCustomerExecuted(randomCustomer.getIdentifier(), fourEyesTask.getIdentifier());
+    this.eventRecorder.wait(CustomerEventConstants.PUT_CUSTOMER, randomCustomer.getIdentifier());
+
+    fourEyesTask.setPredefined(false);
+    this.customerManager.updateTask(fourEyesTask.getIdentifier(), fourEyesTask);
+    this.eventRecorder.wait(CustomerEventConstants.PUT_TASK, fourEyesTask.getIdentifier());
   }
 }
