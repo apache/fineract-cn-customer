@@ -19,6 +19,7 @@ import io.mifos.core.api.annotation.ThrowsException;
 import io.mifos.core.api.annotation.ThrowsExceptions;
 import io.mifos.core.api.util.CustomFeignClientsConfiguration;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
+import io.mifos.customer.catalog.api.v1.domain.Field;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,5 +60,48 @@ public interface CatalogManager {
       produces = MediaType.ALL_VALUE,
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class)
+  })
   Catalog findCatalog(@PathVariable("identifier") final String identifier);
+
+  @RequestMapping(
+      path = "/catalogs/{identifier}",
+      method = RequestMethod.DELETE,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+  })
+  void deleteCatalog(@PathVariable("identifier") final String identifier);
+
+  @RequestMapping(
+      path = "/catalogs/{catalogIdentifier}/fields/{fieldIdentifier}",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+  })
+  void updateField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
+                   @PathVariable("fieldIdentifier") final String fieldIdentifier,
+                   @RequestBody Field field);
+
+  @RequestMapping(
+      path = "/catalogs/{catalogIdentifier}/fields/{fieldIdentifier}",
+      method = RequestMethod.DELETE,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+  })
+  void deleteField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
+                   @PathVariable("fieldIdentifier") final String fieldIdentifier);
+
 }

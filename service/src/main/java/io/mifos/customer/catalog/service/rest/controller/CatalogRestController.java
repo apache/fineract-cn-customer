@@ -21,7 +21,11 @@ import io.mifos.core.command.gateway.CommandGateway;
 import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.PermittableGroupIds;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
+import io.mifos.customer.catalog.api.v1.domain.Field;
+import io.mifos.customer.catalog.service.internal.command.ChangeFieldCommand;
 import io.mifos.customer.catalog.service.internal.command.CreateCatalogCommand;
+import io.mifos.customer.catalog.service.internal.command.DeleteCatalogCommand;
+import io.mifos.customer.catalog.service.internal.command.DeleteFieldCommand;
 import io.mifos.customer.catalog.service.internal.service.CatalogService;
 import io.mifos.customer.service.ServiceConstants;
 import org.slf4j.Logger;
@@ -36,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -100,5 +105,65 @@ public class CatalogRestController {
         this.catalogService.findCatalog(identifier)
             .orElseThrow(() -> ServiceException.notFound("Catalog {0} not found.", identifier))
     );
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CATALOG)
+  @RequestMapping(
+      path = "/{identifier}",
+      method = RequestMethod.DELETE,
+      consumes = MediaType.ALL_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> deleteCatalog(@PathVariable("identifier") final String identifier) {
+    if (this.catalogService.catalogInUse(identifier)) {
+      throw ServiceException.badRequest("Catalog {0} in use.", identifier);
+    }
+
+    this.commandGateway.process(new DeleteCatalogCommand(identifier));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CATALOG)
+  @RequestMapping(
+      path = "/{catalogIdentifier}/fields/{fieldIdentifier}",
+      method = RequestMethod.PUT,
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> updateField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
+                                   @PathVariable("fieldIdentifier") final String fieldIdentifier,
+                                   @RequestBody @Valid Field field) {
+    if (this.catalogService.fieldInUse(catalogIdentifier, fieldIdentifier)) {
+      throw ServiceException.badRequest("Catalog {0} in use.", catalogIdentifier);
+    }
+
+    this.commandGateway.process(new ChangeFieldCommand(catalogIdentifier, field));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CATALOG)
+  @RequestMapping(
+      path = "/{catalogIdentifier}/fields/{fieldIdentifier}",
+      method = RequestMethod.DELETE,
+      consumes = MediaType.ALL_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> deleteField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
+                                     @PathVariable("fieldIdentifier") final String fieldIdentifier) {
+    if (this.catalogService.fieldInUse(catalogIdentifier, fieldIdentifier)) {
+      throw ServiceException.badRequest("Catalog {0} in use.", catalogIdentifier);
+    }
+
+    this.commandGateway.process(new DeleteFieldCommand(catalogIdentifier, fieldIdentifier));
+
+    return ResponseEntity.accepted().build();
   }
 }

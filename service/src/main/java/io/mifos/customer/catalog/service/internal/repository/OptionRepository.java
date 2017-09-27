@@ -15,19 +15,9 @@
  */
 package io.mifos.customer.catalog.service.internal.repository;
 
-import io.mifos.customer.service.internal.repository.CustomerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+public interface OptionRepository extends JpaRepository<OptionEntity, Long> {
 
-@Repository
-public interface FieldValueRepository extends JpaRepository<FieldValueEntity, Long> {
-
-  List<FieldValueEntity> findByCustomer(final CustomerEntity customer);
-
-  void deleteByCustomer(final CustomerEntity customer);
-
-  Optional<FieldValueEntity> findByField(final FieldEntity fieldEntity);
+  void deleteByField(final FieldEntity fieldEntity);
 }

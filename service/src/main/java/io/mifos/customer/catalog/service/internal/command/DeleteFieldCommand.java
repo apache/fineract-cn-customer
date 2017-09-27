@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer.catalog.service.internal.repository;
+package io.mifos.customer.catalog.service.internal.command;
 
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+public class DeleteFieldCommand {
+  private final String catalogIdentifier;
+  private final String fieldIdentifier;
 
-import java.util.List;
-import java.util.Optional;
+  public DeleteFieldCommand(final String catalogIdentifier, final String fieldIdentifier) {
+    super();
+    this.catalogIdentifier = catalogIdentifier;
+    this.fieldIdentifier = fieldIdentifier;
+  }
 
-@Repository
-public interface FieldValueRepository extends JpaRepository<FieldValueEntity, Long> {
+  public String catalogIdentifier() {
+    return this.catalogIdentifier;
+  }
 
-  List<FieldValueEntity> findByCustomer(final CustomerEntity customer);
-
-  void deleteByCustomer(final CustomerEntity customer);
-
-  Optional<FieldValueEntity> findByField(final FieldEntity fieldEntity);
+  public String fieldIdentifier() {
+    return this.fieldIdentifier;
+  }
 }

@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer.catalog.service.internal.repository;
+package io.mifos.customer.catalog.service.internal.command;
 
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import io.mifos.customer.catalog.api.v1.domain.Field;
 
-import java.util.List;
-import java.util.Optional;
+public class ChangeFieldCommand {
+  private final String catalogIdentifier;
+  private final Field field;
 
-@Repository
-public interface FieldValueRepository extends JpaRepository<FieldValueEntity, Long> {
+  public ChangeFieldCommand(final String catalogIdentifier, final Field field) {
+    super();
+    this.catalogIdentifier = catalogIdentifier;
+    this.field = field;
+  }
 
-  List<FieldValueEntity> findByCustomer(final CustomerEntity customer);
+  public String catalogIdentifier() {
+    return this.catalogIdentifier;
+  }
 
-  void deleteByCustomer(final CustomerEntity customer);
-
-  Optional<FieldValueEntity> findByField(final FieldEntity fieldEntity);
+  public Field field() {
+    return this.field;
+  }
 }
