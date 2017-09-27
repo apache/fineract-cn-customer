@@ -15,6 +15,7 @@
  */
 package io.mifos.customer.catalog;
 
+import com.google.common.collect.Lists;
 import io.mifos.anubis.test.v1.TenantApplicationSecurityEnvironmentTestRule;
 import io.mifos.core.api.context.AutoUserContext;
 import io.mifos.core.test.env.TestEnvironment;
@@ -28,8 +29,10 @@ import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.catalog.api.v1.CatalogEventConstants;
 import io.mifos.customer.catalog.api.v1.client.CatalogManager;
+import io.mifos.customer.catalog.api.v1.client.CatalogValidationException;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.api.v1.domain.Field;
+import io.mifos.customer.catalog.api.v1.domain.Option;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.util.CatalogGenerator;
 import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
@@ -54,6 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
@@ -202,5 +206,145 @@ public class TestCatalog {
 
     final Customer savedCustomer = this.customerManager.findCustomer(randomCustomer.getIdentifier());
     Assert.assertTrue(savedCustomer.getCustomValues().size() == 2);
+  }
+
+  @Test
+  public void shouldDeleteCatalog() throws Exception {
+    final Catalog catalog = CatalogGenerator.createRandomCatalog();
+
+    this.catalogManager.createCatalog(catalog);
+    this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
+
+    this.catalogManager.deleteCatalog(catalog.getIdentifier());
+    Assert.assertTrue(this.eventRecorder.wait(CatalogEventConstants.DELETE_CATALOG, catalog.getIdentifier()));
+  }
+
+  @Test(expected = CatalogValidationException.class)
+  public void shouldNotDeleteCatalogUsed() throws Exception {
+    final Catalog catalog = CatalogGenerator.createRandomCatalog();
+
+    this.catalogManager.createCatalog(catalog);
+    this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
+
+    final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
+    randomCustomer.setCustomValues(catalog.getFields()
+        .stream()
+        .map(field -> {
+          final Value value = new Value();
+          value.setCatalogIdentifier(catalog.getIdentifier());
+          value.setFieldIdentifier(field.getIdentifier());
+          switch (Field.DataType.valueOf(field.getDataType())) {
+            case NUMBER:
+              value.setValue("25.00");
+              break;
+            case SINGLE_SELECTION:
+              value.setValue("1");
+          }
+          return value;
+        })
+        .collect(Collectors.toList())
+    );
+
+    this.customerManager.createCustomer(randomCustomer);
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
+
+    this.catalogManager.deleteCatalog(catalog.getIdentifier());
+  }
+
+  @Test
+  public void shouldDeleteField() throws Exception {
+    final Catalog catalog = CatalogGenerator.createRandomCatalog();
+
+    this.catalogManager.createCatalog(catalog);
+    this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
+
+    final Optional<Field> optionalField = catalog.getFields().stream().findFirst();
+    optionalField.ifPresent(field -> {
+      this.catalogManager.deleteField(catalog.getIdentifier(), field.getIdentifier());
+      try {
+        Assert.assertTrue(this.eventRecorder.wait(CatalogEventConstants.DELETE_FIELD, field.getIdentifier()));
+      } catch (final InterruptedException iex) {
+        Assert.fail(iex.getMessage());
+      }
+    });
+
+    final Catalog savedCatalog = this.catalogManager.findCatalog(catalog.getIdentifier());
+    Assert.assertEquals(1, savedCatalog.getFields().size());
+  }
+
+  @Test(expected = CatalogValidationException.class)
+  public void shouldNotDeleteField() throws Exception {
+    final Catalog catalog = CatalogGenerator.createRandomCatalog();
+
+    this.catalogManager.createCatalog(catalog);
+    this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
+
+    final Customer randomCustomer = CustomerGenerator.createRandomCustomer();
+    randomCustomer.setCustomValues(catalog.getFields()
+        .stream()
+        .map(field -> {
+          final Value value = new Value();
+          value.setCatalogIdentifier(catalog.getIdentifier());
+          value.setFieldIdentifier(field.getIdentifier());
+          switch (Field.DataType.valueOf(field.getDataType())) {
+            case NUMBER:
+              value.setValue("37.00");
+              break;
+            case SINGLE_SELECTION:
+              value.setValue("1");
+          }
+          return value;
+        })
+        .collect(Collectors.toList())
+    );
+
+    this.customerManager.createCustomer(randomCustomer);
+    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, randomCustomer.getIdentifier());
+
+    final Optional<Field> optionalField = catalog.getFields().stream().findFirst();
+    optionalField.ifPresent(field -> this.catalogManager.deleteField(catalog.getIdentifier(), field.getIdentifier()));
+  }
+
+  @Test
+  public void shouldUpdateField() throws Exception {
+    final Catalog catalog = CatalogGenerator.createRandomCatalog();
+
+    this.catalogManager.createCatalog(catalog);
+    this.eventRecorder.wait(CatalogEventConstants.POST_CATALOG, catalog.getIdentifier());
+
+    final Optional<Field> optionalField = catalog.getFields()
+        .stream()
+        .filter(field -> field.getDataType().equals(Field.DataType.SINGLE_SELECTION.name()))
+        .findFirst();
+
+    optionalField.ifPresent(field -> {
+      final Option option = new Option();
+      option.setLabel("new-option");
+      option.setValue(2);
+      field.setOptions(Lists.newArrayList(option));
+      this.catalogManager.updateField(catalog.getIdentifier(), field.getIdentifier(), field);
+      try {
+        Assert.assertTrue(this.eventRecorder.wait(CatalogEventConstants.PUT_FIELD, field.getIdentifier()));
+      } catch (final InterruptedException iex) {
+        Assert.fail(iex.getMessage());
+      }
+    });
+
+    final Catalog savedCatalog = this.catalogManager.findCatalog(catalog.getIdentifier());
+    final Optional<Field> optionalFetchedField = savedCatalog.getFields()
+        .stream()
+        .filter(field -> field.getDataType().equals(Field.DataType.SINGLE_SELECTION.name()))
+        .findFirst();
+
+    if (optionalFetchedField.isPresent()) {
+      final Field field = optionalFetchedField.get();
+      Assert.assertEquals(1, field.getOptions().size());
+      final Optional<Option> optionalOption = field.getOptions().stream().findFirst();
+      Assert.assertTrue(optionalOption.isPresent());
+      final Option option = optionalOption.get();
+      Assert.assertEquals(Integer.valueOf(2), option.getValue());
+    } else {
+      Assert.fail();
+    }
   }
 }

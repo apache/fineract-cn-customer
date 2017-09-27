@@ -15,16 +15,22 @@
  */
 package io.mifos.customer.catalog.service.internal.service;
 
+import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.service.internal.mapper.CatalogMapper;
 import io.mifos.customer.catalog.service.internal.mapper.FieldMapper;
+import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
 import io.mifos.customer.catalog.service.internal.repository.CatalogRepository;
+import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
+import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
+import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
 import io.mifos.customer.service.ServiceConstants;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,13 +40,19 @@ public class CatalogService {
 
   private final Logger logger;
   private final CatalogRepository catalogRepository;
+  private final FieldRepository fieldRepository;
+  private final FieldValueRepository fieldValueRepository;
 
   @Autowired
   public CatalogService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
-                        final CatalogRepository catalogRepository) {
+                        final CatalogRepository catalogRepository,
+                        final FieldRepository fieldRepository,
+                        final FieldValueRepository fieldValueRepository) {
     super();
     this.logger = logger;
     this.catalogRepository = catalogRepository;
+    this.fieldRepository = fieldRepository;
+    this.fieldValueRepository = fieldValueRepository;
   }
 
   public Boolean catalogExists(final String identifier) {
@@ -75,5 +87,31 @@ public class CatalogService {
           );
           return catalog;
         });
+  }
+
+  public Boolean catalogInUse(final String identifier) {
+    final CatalogEntity catalogEntity = this.catalogRepository.findByIdentifier(identifier).orElseThrow(
+        () -> ServiceException.notFound("Catalog {0} not found.", identifier)
+    );
+
+    final ArrayList<Boolean> fieldUsageList = new ArrayList<>();
+    catalogEntity.getFields().forEach(fieldEntity -> {
+      fieldUsageList.add(this.fieldInUse(catalogEntity, fieldEntity.getIdentifier()));
+    });
+
+    return fieldUsageList.stream().anyMatch(aBoolean -> aBoolean.equals(Boolean.TRUE));
+  }
+
+  public Boolean fieldInUse(final String catalogIdentifier, final String fieldIdentifier) {
+    final CatalogEntity catalogEntity = this.catalogRepository.findByIdentifier(catalogIdentifier).orElseThrow(
+        () -> ServiceException.notFound("Catalog {0} not found.", catalogIdentifier)
+    );
+    return this.fieldInUse(catalogEntity, fieldIdentifier);
+  }
+
+  private Boolean fieldInUse(final CatalogEntity catalogEntity, final String fieldIdentifier) {
+    final FieldEntity fieldEntity = this.fieldRepository.findByCatalogAndIdentifier(catalogEntity, fieldIdentifier).orElseThrow(
+        () -> ServiceException.notFound("Field {0} of catalog {1} not found.", catalogEntity.getIdentifier(), fieldIdentifier));
+    return this.fieldValueRepository.findByField(fieldEntity).isPresent();
   }
 }

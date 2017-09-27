@@ -42,4 +42,32 @@ public class CatalogEventListener {
   public void customerCreatedEvent(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
                                    final String payload) {
     this.eventRecorder.event(tenant, CatalogEventConstants.POST_CATALOG, payload, String.class);
-  }}
+  }
+
+  @JmsListener(
+      destination = CustomerEventConstants.DESTINATION,
+      selector = CatalogEventConstants.SELECTOR_DELETE_CATALOG
+  )
+  public void onDeleteCatalog(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                              final String payload) {
+    this.eventRecorder.event(tenant, CatalogEventConstants.DELETE_CATALOG, payload, String.class);
+  }
+
+  @JmsListener(
+      destination = CustomerEventConstants.DESTINATION,
+      selector = CatalogEventConstants.SELECTOR_DELETE_FIELD
+  )
+  public void onDeleteField(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                            final String payload) {
+    this.eventRecorder.event(tenant, CatalogEventConstants.DELETE_FIELD, payload, String.class);
+  }
+
+  @JmsListener(
+      destination = CustomerEventConstants.DESTINATION,
+      selector = CatalogEventConstants.SELECTOR_PUT_FIELD
+  )
+  public void onChangeField(@Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+                            final String payload) {
+    this.eventRecorder.event(tenant, CatalogEventConstants.PUT_FIELD, payload, String.class);
+  }
+}
