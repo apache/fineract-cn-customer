@@ -15,13 +15,14 @@
  */
 package io.mifos.customer.catalog.api.v1.domain;
 
+import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class Value {
 
-  @NotEmpty
+  @ValidIdentifier
   private String catalogIdentifier;
-  @NotEmpty
+  @ValidIdentifier
   private String fieldIdentifier;
   @NotEmpty
   private String value;
