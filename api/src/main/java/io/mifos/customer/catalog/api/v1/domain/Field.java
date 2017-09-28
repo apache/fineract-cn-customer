@@ -15,6 +15,7 @@
  */
 package io.mifos.customer.catalog.api.v1.domain;
 
+import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
@@ -31,7 +32,7 @@ public class Field {
     MULTI_SELECTION
   }
 
-  @NotEmpty
+  @ValidIdentifier
   private String identifier;
   @NotNull
   private DataType dataType;

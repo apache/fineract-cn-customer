@@ -15,6 +15,7 @@
  */
 package io.mifos.customer.catalog.api.v1.domain;
 
+import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
@@ -22,7 +23,7 @@ import java.util.List;
 
 public class Catalog {
 
-  @NotEmpty
+  @ValidIdentifier
   private String identifier;
   @NotEmpty
   private String name;
