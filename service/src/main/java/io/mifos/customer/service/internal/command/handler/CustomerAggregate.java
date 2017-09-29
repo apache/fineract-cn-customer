@@ -196,6 +196,7 @@ public class CustomerAggregate {
 
     if (customer.getCustomValues() != null) {
       this.fieldValueRepository.deleteByCustomer(customerEntity);
+      this.fieldValueRepository.flush();
       this.setCustomValues(customer, customerEntity);
     }
 

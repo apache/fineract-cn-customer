@@ -118,7 +118,7 @@ public class CatalogRestController {
   @ResponseBody
   ResponseEntity<Void> deleteCatalog(@PathVariable("identifier") final String identifier) {
     if (this.catalogService.catalogInUse(identifier)) {
-      throw ServiceException.badRequest("Catalog {0} in use.", identifier);
+      throw ServiceException.conflict("Catalog {0} in use.", identifier);
     }
 
     this.commandGateway.process(new DeleteCatalogCommand(identifier));
@@ -139,7 +139,7 @@ public class CatalogRestController {
                                    @PathVariable("fieldIdentifier") final String fieldIdentifier,
                                    @RequestBody @Valid Field field) {
     if (this.catalogService.fieldInUse(catalogIdentifier, fieldIdentifier)) {
-      throw ServiceException.badRequest("Catalog {0} in use.", catalogIdentifier);
+      throw ServiceException.conflict("Field {0} in use.", fieldIdentifier);
     }
 
     this.commandGateway.process(new ChangeFieldCommand(catalogIdentifier, field));
@@ -159,7 +159,7 @@ public class CatalogRestController {
   ResponseEntity<Void> deleteField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
                                      @PathVariable("fieldIdentifier") final String fieldIdentifier) {
     if (this.catalogService.fieldInUse(catalogIdentifier, fieldIdentifier)) {
-      throw ServiceException.badRequest("Catalog {0} in use.", catalogIdentifier);
+      throw ServiceException.conflict("Field {0} in use.", fieldIdentifier);
     }
 
     this.commandGateway.process(new DeleteFieldCommand(catalogIdentifier, fieldIdentifier));

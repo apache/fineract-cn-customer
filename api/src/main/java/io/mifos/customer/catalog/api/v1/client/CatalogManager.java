@@ -73,7 +73,8 @@ public interface CatalogManager {
   )
   @ThrowsExceptions({
       @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
-      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class),
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = CatalogAlreadyInUseException.class)
   })
   void deleteCatalog(@PathVariable("identifier") final String identifier);
 
@@ -85,7 +86,8 @@ public interface CatalogManager {
   )
   @ThrowsExceptions({
       @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
-      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class),
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = FieldAlreadyInUseException.class)
   })
   void updateField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
                    @PathVariable("fieldIdentifier") final String fieldIdentifier,
@@ -99,7 +101,8 @@ public interface CatalogManager {
   )
   @ThrowsExceptions({
       @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CatalogNotFoundException.class),
-      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class)
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CatalogValidationException.class),
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = FieldAlreadyInUseException.class)
   })
   void deleteField(@PathVariable("catalogIdentifier") final String catalogIdentifier,
                    @PathVariable("fieldIdentifier") final String fieldIdentifier);
