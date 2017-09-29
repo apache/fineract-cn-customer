@@ -28,8 +28,10 @@ import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.catalog.api.v1.CatalogEventConstants;
+import io.mifos.customer.catalog.api.v1.client.CatalogAlreadyInUseException;
 import io.mifos.customer.catalog.api.v1.client.CatalogManager;
 import io.mifos.customer.catalog.api.v1.client.CatalogValidationException;
+import io.mifos.customer.catalog.api.v1.client.FieldAlreadyInUseException;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.api.v1.domain.Field;
 import io.mifos.customer.catalog.api.v1.domain.Option;
@@ -219,7 +221,7 @@ public class TestCatalog {
     Assert.assertTrue(this.eventRecorder.wait(CatalogEventConstants.DELETE_CATALOG, catalog.getIdentifier()));
   }
 
-  @Test(expected = CatalogValidationException.class)
+  @Test(expected = CatalogAlreadyInUseException.class)
   public void shouldNotDeleteCatalogUsed() throws Exception {
     final Catalog catalog = CatalogGenerator.createRandomCatalog();
 
@@ -272,7 +274,7 @@ public class TestCatalog {
     Assert.assertEquals(1, savedCatalog.getFields().size());
   }
 
-  @Test(expected = CatalogValidationException.class)
+  @Test(expected = FieldAlreadyInUseException.class)
   public void shouldNotDeleteField() throws Exception {
     final Catalog catalog = CatalogGenerator.createRandomCatalog();
 
