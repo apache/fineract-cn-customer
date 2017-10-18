@@ -13,22 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer;
+package io.mifos.customer.api.v1.client;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-/**
- * @author Myrle Krantz
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TestCustomer.class,
-    TestIdentificationCards.class,
-    TestInfrastructure.class,
-    TestTaskDefinition.class,
-    TestTaskInstance.class,
-    TestDocuments.class
-})
-public class TestSuite extends SuiteTestEnvironment {
+public class DocumentValidationException extends RuntimeException {
 }

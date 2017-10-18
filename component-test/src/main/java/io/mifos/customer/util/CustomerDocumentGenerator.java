@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mifos.customer;
+package io.mifos.customer.util;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import io.mifos.customer.api.v1.domain.CustomerDocument;
+import org.apache.commons.lang3.RandomStringUtils;
 
-/**
- * @author Myrle Krantz
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    TestCustomer.class,
-    TestIdentificationCards.class,
-    TestInfrastructure.class,
-    TestTaskDefinition.class,
-    TestTaskInstance.class,
-    TestDocuments.class
-})
-public class TestSuite extends SuiteTestEnvironment {
+public final class CustomerDocumentGenerator {
+
+  private CustomerDocumentGenerator() {
+    super();
+  }
+
+  public static CustomerDocument createRandomCustomerDocument() {
+    final CustomerDocument ret = new CustomerDocument();
+    ret.setIdentifier(RandomStringUtils.randomAlphanumeric(8));
+    return ret;
+  }
 }

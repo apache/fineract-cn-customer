@@ -1,0 +1,168 @@
+/*
+ * Copyright 2017 The Mifos Initiative.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.mifos.customer;
+
+import io.mifos.core.api.util.NotFoundException;
+import io.mifos.core.test.domain.TimeStampChecker;
+import io.mifos.customer.api.v1.CustomerEventConstants;
+import io.mifos.customer.api.v1.client.CompletedDocumentCannotBeChangedException;
+import io.mifos.customer.api.v1.client.DocumentValidationException;
+import io.mifos.customer.api.v1.domain.Customer;
+import io.mifos.customer.api.v1.domain.CustomerDocument;
+import io.mifos.customer.api.v1.events.DocumentEvent;
+import io.mifos.customer.api.v1.events.DocumentPageEvent;
+import io.mifos.customer.util.CustomerDocumentGenerator;
+import io.mifos.customer.util.CustomerGenerator;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * @author Myrle Krantz
+ */
+public class TestDocuments extends AbstractCustomerTest {
+
+  @Test
+  public void shouldUploadEditThenCompleteDocument() throws InterruptedException, IOException {
+    //Prepare test.
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+    customerManager.createCustomer(customer);
+    eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+
+
+    //Check that document "stub" can be created.
+    final CustomerDocument customerDocument = CustomerDocumentGenerator.createRandomCustomerDocument();
+    customerDocumentsManager.createDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+    eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier()));
+
+    final CustomerDocument createdCustomerDocument = customerDocumentsManager.getDocument(
+        customer.getIdentifier(), customerDocument.getIdentifier());
+    Assert.assertEquals(customerDocument, createdCustomerDocument);
+
+
+    //Check that pages can be created.
+    for (int i = 0; i < 10; i++) {
+      createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), i);
+    }
+
+    List<Integer> pageNumbers = customerDocumentsManager.getDocumentPageNumbers(
+        customer.getIdentifier(), customerDocument.getIdentifier());
+    final List<Integer> expectedPageNumbers = IntStream.range(0, 10).boxed().collect(Collectors.toList());
+    Assert.assertEquals(expectedPageNumbers, pageNumbers);
+
+
+    //Check that a page can be deleted.
+    customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
+    eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
+        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 9));
+
+    final List<Integer> changedPageNumbers = customerDocumentsManager.getDocumentPageNumbers(
+        customer.getIdentifier(), customerDocument.getIdentifier());
+    final List<Integer> changedExpectedPageNumbers = IntStream.range(0, 9).boxed().collect(Collectors.toList());
+    Assert.assertEquals(changedExpectedPageNumbers, changedPageNumbers);
+
+    try {
+      customerDocumentsManager.getDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
+      Assert.fail("Getting the 9th document page should throw a NotFoundException after the 9th page was removed.");
+    }
+    catch (final NotFoundException ignored) {}
+
+
+    //Check that a document which is missing pages cannot be completed
+    customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 2);
+    eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
+        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 2));
+
+    try {
+      customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), true);
+      Assert.fail("It shouldn't be possible to complete a document with missing pages.");
+    }
+    catch (final DocumentValidationException ignored) {}
+
+    createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 2);
+
+
+    //Check that a valid document can be completed.
+    final TimeStampChecker timeStampChecker = TimeStampChecker.roughlyNow();
+    customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), true);
+    eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT_COMPLETE,
+        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 9));
+
+    final CustomerDocument completedDocument = customerDocumentsManager.getDocument(
+        customer.getIdentifier(), customerDocument.getIdentifier());
+    Assert.assertEquals(true, completedDocument.isCompleted());
+    timeStampChecker.assertCorrect(completedDocument.getCreatedOn());
+
+
+    //Check that document can't be changed after completion
+    try {
+      createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
+      Assert.fail("Adding another page after the document is completed shouldn't be possible.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
+    try {
+      customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 8);
+      Assert.fail("Deleting a page after the document is completed shouldn't be possible.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
+
+
+    //Check that document can't be uncompleted.
+    try {
+      customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), false);
+      Assert.fail("It shouldn't be possible to change a document from completed to uncompleted.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
+
+
+    //Check that document is in the list.
+    final List<CustomerDocument> documents = customerDocumentsManager.getDocuments(customer.getIdentifier());
+    final boolean documentIsInList = documents.stream().anyMatch(x ->
+        (x.getIdentifier().equals(customerDocument.getIdentifier())) &&
+            (x.isCompleted()));
+    Assert.assertTrue("The document we just completed should be in the list", documentIsInList);
+  }
+
+
+  private void createDocumentPage(
+      final String customerIdentifier,
+      final String documentIdentifier,
+      final int pageNumber) throws InterruptedException, IOException {
+    final MockMultipartFile page = new MockMultipartFile(
+        "page",
+        "test.png",
+        MediaType.IMAGE_PNG_VALUE,
+        RandomStringUtils.randomAlphanumeric(20).getBytes());
+
+    customerDocumentsManager.createDocumentPage(customerIdentifier, documentIdentifier, pageNumber, page);
+    eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT_PAGE,
+        new DocumentPageEvent(customerIdentifier, documentIdentifier, pageNumber));
+
+    Thread.sleep(100);
+
+    final byte[] uploadedPage = customerDocumentsManager.getDocumentPage(customerIdentifier, documentIdentifier, pageNumber);
+    Assert.assertTrue("Page " + pageNumber, Arrays.equals(page.getBytes(), uploadedPage));
+  }
+}

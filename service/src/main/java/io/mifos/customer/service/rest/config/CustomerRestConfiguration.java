@@ -29,6 +29,7 @@ import io.mifos.customer.service.internal.config.CustomerServiceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -54,6 +55,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
     CatalogRestConfiguration.class,
     CustomerServiceConfiguration.class
 })
+@EnableConfigurationProperties({UploadProperties.class})
 public class CustomerRestConfiguration extends WebMvcConfigurerAdapter {
 
   public CustomerRestConfiguration() {

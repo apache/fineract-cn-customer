@@ -47,6 +47,11 @@ public interface CustomerEventConstants {
   String POST_PORTRAIT = "post-portrait";
   String DELETE_PORTRAIT = "delete-portrait";
 
+  String POST_DOCUMENT = "post-document";
+  String POST_DOCUMENT_PAGE = "post-document-page";
+  String DELETE_DOCUMENT_PAGE = "delete-document-page";
+  String POST_DOCUMENT_COMPLETE = "post-document-complete";
+
   String SELECTOR_INITIALIZE = SELECTOR_NAME + " = '" + INITIALIZE + "'";
 
   String SELECTOR_POST_CUSTOMER = SELECTOR_NAME + " = '" + POST_CUSTOMER + "'";
@@ -72,4 +77,9 @@ public interface CustomerEventConstants {
 
   String SELECTOR_PUT_PORTRAIT = SELECTOR_NAME + " = '" + POST_PORTRAIT + "'";
   String SELECTOR_DELETE_PORTRAIT = SELECTOR_NAME + " = '" + DELETE_PORTRAIT + "'";
+
+  String SELECTOR_POST_DOCUMENT = SELECTOR_NAME + " = '" + POST_DOCUMENT + "'";
+  String SELECTOR_POST_DOCUMENT_PAGE = SELECTOR_NAME + " = '" + POST_DOCUMENT_PAGE + "'";
+  String SELECTOR_DELETE_DOCUMENT_PAGE = SELECTOR_NAME + " = '" + DELETE_DOCUMENT_PAGE + "'";
+  String SELECTOR_POST_DOCUMENT_COMPLETE = SELECTOR_NAME + " = '" + POST_DOCUMENT_COMPLETE + "'";
 }

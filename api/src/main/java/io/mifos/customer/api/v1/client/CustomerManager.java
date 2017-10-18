@@ -329,7 +329,7 @@ public interface CustomerManager {
   )
   @ThrowsExceptions({
           @ThrowsException(status = HttpStatus.NOT_FOUND, exception = CustomerNotFoundException.class),
-          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = PortraitValidationException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = DocumentValidationException.class),
   })
   void postPortrait(@PathVariable("identifier") final String identifier,
                    @RequestBody final MultipartFile portrait);
