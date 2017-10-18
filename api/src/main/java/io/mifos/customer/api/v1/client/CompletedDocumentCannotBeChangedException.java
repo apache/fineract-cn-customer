@@ -15,5 +15,8 @@
  */
 package io.mifos.customer.api.v1.client;
 
-public class PortraitValidationException extends RuntimeException {
+/**
+ * @author Myrle Krantz
+ */
+public class CompletedDocumentCannotBeChangedException extends RuntimeException {
 }

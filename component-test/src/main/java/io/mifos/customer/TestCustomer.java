@@ -20,7 +20,7 @@ import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
 import io.mifos.customer.api.v1.client.CustomerNotFoundException;
 import io.mifos.customer.api.v1.client.CustomerValidationException;
 import io.mifos.customer.api.v1.client.PortraitNotFoundException;
-import io.mifos.customer.api.v1.client.PortraitValidationException;
+import io.mifos.customer.api.v1.client.DocumentValidationException;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.ContactDetail;
@@ -392,7 +392,7 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertArrayEquals(secondFile.getBytes(), portrait);
   }
 
-  @Test(expected = PortraitValidationException.class)
+  @Test(expected = DocumentValidationException.class)
   public void shouldThrowIfPortraitExceedsMaxSize() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
 

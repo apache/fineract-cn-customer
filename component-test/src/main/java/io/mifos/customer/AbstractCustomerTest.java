@@ -21,6 +21,7 @@ import io.mifos.core.test.fixture.TenantDataStoreContextTestRule;
 import io.mifos.core.test.listener.EnableEventRecording;
 import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
+import io.mifos.customer.api.v1.client.CustomerDocumentsManager;
 import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
 import org.junit.After;
@@ -71,6 +72,9 @@ public class AbstractCustomerTest extends SuiteTestEnvironment {
 
   @Autowired
   CustomerManager customerManager;
+
+  @Autowired
+  CustomerDocumentsManager customerDocumentsManager;
 
   @Autowired
   EventRecorder eventRecorder;
