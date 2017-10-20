@@ -21,10 +21,7 @@ import io.mifos.core.command.gateway.CommandGateway;
 import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.PermittableGroupIds;
 import io.mifos.customer.api.v1.domain.CustomerDocument;
-import io.mifos.customer.service.internal.command.CompleteDocumentCommand;
-import io.mifos.customer.service.internal.command.CreateDocumentCommand;
-import io.mifos.customer.service.internal.command.CreateDocumentPageCommand;
-import io.mifos.customer.service.internal.command.DeleteDocumentPageCommand;
+import io.mifos.customer.service.internal.command.*;
 import io.mifos.customer.service.internal.repository.DocumentPageEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.DocumentService;
@@ -108,6 +105,30 @@ public class DocumentsRestController {
       throw ServiceException.badRequest("Document identifier in request body must match document identifier in request path.");
 
     commandGateway.process(new CreateDocumentCommand(customerIdentifier, instance));
+
+    return ResponseEntity.accepted().build();
+  }
+
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.DOCUMENTS)
+  @RequestMapping(
+      value = "/{documentidentifier}",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public @ResponseBody
+  ResponseEntity<Void> changeDocument(
+      @PathVariable("customeridentifier") final String customerIdentifier,
+      @PathVariable("documentidentifier") final String documentIdentifier,
+      @RequestBody final @Valid CustomerDocument instance) {
+    throwIfCustomerNotExists(customerIdentifier);
+    throwIfCustomerDocumentNotExists(customerIdentifier, documentIdentifier);
+
+    if (!instance.getIdentifier().equals(documentIdentifier))
+      throw ServiceException.badRequest("Document identifier in request body must match document identifier in request path.");
+
+    commandGateway.process(new ChangeDocumentCommand(customerIdentifier, instance));
 
     return ResponseEntity.accepted().build();
   }

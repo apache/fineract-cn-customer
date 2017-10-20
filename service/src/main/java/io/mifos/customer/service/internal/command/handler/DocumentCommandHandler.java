@@ -23,10 +23,7 @@ import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.events.DocumentEvent;
 import io.mifos.customer.api.v1.events.DocumentPageEvent;
-import io.mifos.customer.service.internal.command.CompleteDocumentCommand;
-import io.mifos.customer.service.internal.command.CreateDocumentCommand;
-import io.mifos.customer.service.internal.command.CreateDocumentPageCommand;
-import io.mifos.customer.service.internal.command.DeleteDocumentPageCommand;
+import io.mifos.customer.service.internal.command.*;
 import io.mifos.customer.service.internal.mapper.DocumentMapper;
 import io.mifos.customer.service.internal.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +75,24 @@ public class DocumentCommandHandler {
 
     final CustomerEntity customerEntity = customerRepository.findByIdentifier(command.getCustomerIdentifier());
     final DocumentEntity documentEntity = DocumentMapper.map(command.getCustomerDocument(), customerEntity);
+    documentRepository.save(documentEntity);
+
+    return new DocumentEvent(command.getCustomerIdentifier(), command.getCustomerDocument().getIdentifier());
+  }
+
+  @Transactional
+  @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_DOCUMENT)
+  public DocumentEvent process(final ChangeDocumentCommand command) throws IOException {
+    final DocumentEntity existingDocument = documentRepository.findByCustomerIdAndDocumentIdentifier(
+        command.getCustomerIdentifier(), command.getCustomerDocument().getIdentifier())
+        .orElseThrow(() ->
+            ServiceException.notFound("Document ''{0}'' for customer ''{1}'' not found",
+                command.getCustomerDocument().getIdentifier(), command.getCustomerIdentifier()));
+
+    final CustomerEntity customerEntity = customerRepository.findByIdentifier(command.getCustomerIdentifier());
+    final DocumentEntity documentEntity = DocumentMapper.map(command.getCustomerDocument(), customerEntity);
+    documentEntity.setId(existingDocument.getId());
     documentRepository.save(documentEntity);
 
     return new DocumentEvent(command.getCustomerIdentifier(), command.getCustomerDocument().getIdentifier());

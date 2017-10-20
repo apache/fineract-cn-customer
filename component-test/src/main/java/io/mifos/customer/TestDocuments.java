@@ -104,6 +104,18 @@ public class TestDocuments extends AbstractCustomerTest {
     createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 2);
 
 
+    logger.info("Check that a document's description can be changed.");
+    customerDocument.setDescription("new description");
+    customerDocumentsManager.changeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.PUT_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
+
+    {
+      final CustomerDocument changedCustomerDocument = customerDocumentsManager.getDocument(customer.getIdentifier(), customerDocument.getIdentifier());
+      Assert.assertEquals(customerDocument, changedCustomerDocument);
+    }
+
+
     logger.info("Check that a valid document can be completed");
     final TimeStampChecker timeStampChecker = TimeStampChecker.roughlyNow();
     customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), true);
