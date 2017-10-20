@@ -79,6 +79,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/")
@@ -267,7 +269,7 @@ public class CustomerRestController {
   @ResponseBody
   ResponseEntity<List<Command>> fetchCustomerCommands(@PathVariable("identifier") final String identifier) {
     if (this.customerService.customerExists(identifier)) {
-      return ResponseEntity.ok(this.customerService.fetchCommandsByCustomer(identifier));
+      return ResponseEntity.ok(this.customerService.fetchCommandsByCustomer(identifier).collect(Collectors.toList()));
     } else {
       throw ServiceException.notFound("Customer {0} not found.", identifier);
     }
@@ -315,8 +317,8 @@ public class CustomerRestController {
         final TaskDefinition taskDefinition = optionalTaskDefinition.get();
         switch (TaskDefinition.Type.valueOf(taskDefinition.getType())) {
           case ID_CARD:
-            final List<IdentificationCard> identificationCards = this.customerService.fetchIdentificationCardsByCustomer(identifier);
-            if (identificationCards.isEmpty()) {
+            final Stream<IdentificationCard> identificationCards = this.customerService.fetchIdentificationCardsByCustomer(identifier);
+            if (!identificationCards.findAny().isPresent()) {
               throw ServiceException.conflict("No identification cards for customer found.");
             }
             break;
@@ -401,7 +403,7 @@ public class CustomerRestController {
   )
   public @ResponseBody ResponseEntity<List<IdentificationCard>> fetchIdentificationCards(@PathVariable("identifier") final String identifier) {
     this.throwIfCustomerNotExists(identifier);
-    return ResponseEntity.ok(this.customerService.fetchIdentificationCardsByCustomer(identifier));
+    return ResponseEntity.ok(this.customerService.fetchIdentificationCardsByCustomer(identifier).collect(Collectors.toList()));
   }
 
   @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.IDENTIFICATIONS)
@@ -612,9 +614,8 @@ public class CustomerRestController {
       consumes = MediaType.ALL_VALUE
   )
   public ResponseEntity<byte[]> getPortrait(@PathVariable("identifier") final String identifier) {
-    this.throwIfPortraitNotExists(identifier);
-
-    final PortraitEntity portrait = this.customerService.findPortrait(identifier);
+    final PortraitEntity portrait = this.customerService.findPortrait(identifier)
+        .orElseThrow(() -> ServiceException.notFound("Portrait for Customer ''{0}'' not found.", identifier));
 
     return ResponseEntity
             .ok()
@@ -756,12 +757,6 @@ public class CustomerRestController {
   private void throwIfCustomerNotExists(final String identifier) {
     if (!this.customerService.customerExists(identifier)) {
       throw ServiceException.notFound("Customer {0} not found.", identifier);
-    }
-  }
-
-  private void throwIfPortraitNotExists(final String identifier) {
-    if (!this.customerService.portraitExists(identifier)) {
-      throw ServiceException.notFound("Portrait for Customer {0} not found.", identifier);
     }
   }
 

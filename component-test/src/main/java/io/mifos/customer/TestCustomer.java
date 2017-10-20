@@ -411,17 +411,17 @@ public class TestCustomer extends AbstractCustomerTest {
 
     this.customerManager.createCustomer(customer);
 
-    this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier()));
 
     final MockMultipartFile firstFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
 
     this.customerManager.postPortrait(customer.getIdentifier(), firstFile);
 
-    this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier());
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.POST_PORTRAIT, customer.getIdentifier()));
 
     this.customerManager.deletePortrait(customer.getIdentifier());
 
-    this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier());
+    Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier()));
 
     this.customerManager.getPortrait(customer.getIdentifier());
   }

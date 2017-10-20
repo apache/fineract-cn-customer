@@ -17,7 +17,6 @@ package io.mifos.customer.service.internal.service;
 
 import io.mifos.customer.api.v1.domain.TaskDefinition;
 import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
 import io.mifos.customer.service.internal.repository.CustomerRepository;
 import io.mifos.customer.service.internal.repository.TaskDefinitionEntity;
 import io.mifos.customer.service.internal.repository.TaskDefinitionRepository;
@@ -25,6 +24,7 @@ import io.mifos.customer.service.internal.repository.TaskInstanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,8 +67,9 @@ public class TaskService {
   }
 
   public List<TaskDefinition> findTasksByCustomer(final String customerIdentifier, Boolean includeExecuted) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(customerIdentifier);
-    return this.taskInstanceRepository.findByCustomer(customerEntity)
+    return customerRepository.findByIdentifier(customerIdentifier)
+        .map(taskInstanceRepository::findByCustomer)
+        .orElse(Collections.emptyList())
         .stream()
         .filter(taskInstanceEntity -> (includeExecuted ? true : taskInstanceEntity.getExecutedBy() == null))
         .map(taskInstanceEntity -> TaskDefinitionMapper.map(taskInstanceEntity.getTaskDefinition()))

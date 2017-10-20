@@ -15,42 +15,14 @@
  */
 package io.mifos.customer.service.internal.service;
 
-import io.mifos.customer.api.v1.domain.Command;
-import io.mifos.customer.api.v1.domain.Customer;
-import io.mifos.customer.api.v1.domain.CustomerPage;
-import io.mifos.customer.api.v1.domain.IdentificationCard;
-import io.mifos.customer.api.v1.domain.IdentificationCardScan;
-import io.mifos.customer.api.v1.domain.ProcessStep;
-import io.mifos.customer.api.v1.domain.TaskDefinition;
+import io.mifos.customer.api.v1.domain.*;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
-import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.mapper.AddressMapper;
-import io.mifos.customer.service.internal.mapper.CommandMapper;
-import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
-import io.mifos.customer.service.internal.mapper.CustomerMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardScanMapper;
-import io.mifos.customer.service.internal.mapper.TaskDefinitionMapper;
-import io.mifos.customer.service.internal.repository.CommandEntity;
-import io.mifos.customer.service.internal.repository.CommandRepository;
-import io.mifos.customer.service.internal.repository.ContactDetailEntity;
-import io.mifos.customer.service.internal.repository.ContactDetailRepository;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.CustomerRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardScanEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardScanRepository;
-import io.mifos.customer.service.internal.repository.PortraitEntity;
-import io.mifos.customer.service.internal.repository.PortraitRepository;
-import io.mifos.customer.service.internal.repository.TaskDefinitionRepository;
-import io.mifos.customer.service.internal.repository.TaskInstanceRepository;
-import org.slf4j.Logger;
+import io.mifos.customer.service.internal.mapper.*;
+import io.mifos.customer.service.internal.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -60,11 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CustomerService {
 
-  private final Logger logger;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
   private final IdentificationCardScanRepository identificationCardScanRepository;
@@ -76,8 +48,7 @@ public class CustomerService {
   private final TaskInstanceRepository taskInstanceRepository;
 
   @Autowired
-  public CustomerService(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
-                         final CustomerRepository customerRepository,
+  public CustomerService(final CustomerRepository customerRepository,
                          final IdentificationCardRepository identificationCardRepository,
                          final IdentificationCardScanRepository identificationCardScanRepository,
                          final PortraitRepository portraitRepository,
@@ -87,7 +58,6 @@ public class CustomerService {
                          final TaskDefinitionRepository taskDefinitionRepository,
                          final TaskInstanceRepository taskInstanceRepository) {
     super();
-    this.logger = logger;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
     this.identificationCardScanRepository = identificationCardScanRepository;
@@ -103,10 +73,6 @@ public class CustomerService {
     return this.customerRepository.existsByIdentifier(identifier);
   }
 
-  public Boolean portraitExists(final String identifier) {
-    return this.portraitRepository.existsByIdentifier(identifier);
-  }
-
   public Boolean identificationCardExists(final String number) {
     return this.identificationCardRepository.existsByNumber(number);
   }
@@ -118,41 +84,39 @@ public class CustomerService {
   }
 
   public Optional<Customer> findCustomer(final String identifier) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
-    if (customerEntity != null) {
-      final Customer customer = CustomerMapper.map(customerEntity);
-      customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
+    return customerRepository.findByIdentifier(identifier)
+        .map(customerEntity -> {
+          final Customer customer = CustomerMapper.map(customerEntity);
+          customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
 
-      final List<ContactDetailEntity> contactDetailEntities = this.contactDetailRepository.findByCustomer(customerEntity);
-      if (contactDetailEntities != null) {
-        customer.setContactDetails(
-            contactDetailEntities
-                .stream()
-                  .map(ContactDetailMapper::map)
-                  .collect(Collectors.toList())
-        );
-      }
+          final List<ContactDetailEntity> contactDetailEntities = this.contactDetailRepository.findByCustomer(customerEntity);
+          if (contactDetailEntities != null) {
+            customer.setContactDetails(
+                contactDetailEntities
+                    .stream()
+                    .map(ContactDetailMapper::map)
+                    .collect(Collectors.toList())
+            );
+          }
 
-      final List<FieldValueEntity> fieldValueEntities = this.fieldValueRepository.findByCustomer(customerEntity);
-      if (fieldValueEntities != null) {
-        customer.setCustomValues(
-            fieldValueEntities
-                .stream()
-                .map(fieldValueEntity -> {
-                  final Value value = new Value();
-                  value.setValue(fieldValueEntity.getValue());
-                  final FieldEntity fieldEntity = fieldValueEntity.getField();
-                  value.setCatalogIdentifier(fieldEntity.getCatalog().getIdentifier());
-                  value.setFieldIdentifier(fieldEntity.getIdentifier());
-                  return value;
-                }).collect(Collectors.toList())
-        );
-      }
+          final List<FieldValueEntity> fieldValueEntities = this.fieldValueRepository.findByCustomer(customerEntity);
+          if (fieldValueEntities != null) {
+            customer.setCustomValues(
+                fieldValueEntities
+                    .stream()
+                    .map(fieldValueEntity -> {
+                      final Value value = new Value();
+                      value.setValue(fieldValueEntity.getValue());
+                      final FieldEntity fieldEntity = fieldValueEntity.getField();
+                      value.setCatalogIdentifier(fieldEntity.getCatalog().getIdentifier());
+                      value.setFieldIdentifier(fieldEntity.getIdentifier());
+                      return value;
+                    }).collect(Collectors.toList())
+            );
+          }
 
-      return Optional.of(customer);
-    } else {
-      return Optional.empty();
-    }
+          return customer;
+        });
   }
 
   public CustomerPage fetchCustomer(final String term, final Boolean includeClosed, final Pageable pageable) {
@@ -186,31 +150,23 @@ public class CustomerService {
     return customerPage;
   }
 
-  public final List<Command> fetchCommandsByCustomer(final String identifier) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
-    final List<CommandEntity> commands = this.commandRepository.findByCustomer(customerEntity);
-    if (commands != null) {
-      return commands.stream().map(CommandMapper::map).collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
+  public final Stream<Command> fetchCommandsByCustomer(final String identifier) {
+    return customerRepository.findByIdentifier(identifier)
+        .map(commandRepository::findByCustomer)
+        .orElse(Stream.empty())
+        .map(CommandMapper::map);
   }
 
-  public final PortraitEntity findPortrait(final String identifier) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
-
-    return this.portraitRepository.findByCustomer(customerEntity);
+  public final Optional<PortraitEntity> findPortrait(final String identifier) {
+    return customerRepository.findByIdentifier(identifier)
+        .map(portraitRepository::findByCustomer);
   }
 
-  public final List<IdentificationCard> fetchIdentificationCardsByCustomer(final String identifier) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(identifier);
-    final List<IdentificationCardEntity> identificationCards = this.identificationCardRepository.findByCustomer(customerEntity);
-
-    if (identificationCards != null) {
-      return identificationCards.stream().map(IdentificationCardMapper::map).collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
+  public final Stream<IdentificationCard> fetchIdentificationCardsByCustomer(final String identifier) {
+    return customerRepository.findByIdentifier(identifier)
+        .map(identificationCardRepository::findByCustomer)
+        .orElse(Stream.empty())
+        .map(IdentificationCardMapper::map);
   }
 
   public Optional<IdentificationCard> findIdentificationCard(final String number) {
@@ -229,8 +185,7 @@ public class CustomerService {
 
   private Optional<IdentificationCardScanEntity> findIdentificationCardEntity(final String number, final String identifier) {
     final Optional<IdentificationCardEntity> cardEntity = this.identificationCardRepository.findByNumber(number);
-    final Optional<IdentificationCardScanEntity> cardScanEntity = cardEntity.flatMap(card -> this.identificationCardScanRepository.findByIdentifierAndIdentificationCard(identifier, card));
-    return cardScanEntity;
+    return cardEntity.flatMap(card -> this.identificationCardScanRepository.findByIdentifierAndIdentificationCard(identifier, card));
   }
 
   public Optional<IdentificationCardScan> findIdentificationCardScan(final String number, final String identifier) {
@@ -242,29 +197,32 @@ public class CustomerService {
   }
 
   public List<ProcessStep> getProcessSteps(final String customerIdentifier) {
-    final ArrayList<ProcessStep> processSteps = new ArrayList<>();
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(customerIdentifier);
+    return customerRepository.findByIdentifier(customerIdentifier)
+        .map(customerEntity -> {
+          final List<ProcessStep> processSteps = new ArrayList<>();
 
-    final Customer.State state = Customer.State.valueOf(customerEntity.getCurrentState());
-    switch (state) {
-      case PENDING:
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.ACTIVATE));
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
-        break;
-      case ACTIVE:
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.LOCK));
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
-        break;
-      case LOCKED:
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.UNLOCK));
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
-        break;
-      case CLOSED:
-        processSteps.add(this.buildProcessStep(customerEntity, Command.Action.REOPEN));
-        break;
-    }
+          final Customer.State state = Customer.State.valueOf(customerEntity.getCurrentState());
+          switch (state) {
+            case PENDING:
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.ACTIVATE));
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+              break;
+            case ACTIVE:
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.LOCK));
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+              break;
+            case LOCKED:
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.UNLOCK));
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.CLOSE));
+              break;
+            case CLOSED:
+              processSteps.add(this.buildProcessStep(customerEntity, Command.Action.REOPEN));
+              break;
+          }
 
-    return processSteps;
+          return processSteps;
+        })
+        .orElse(Collections.emptyList());
   }
 
   private ProcessStep buildProcessStep(final CustomerEntity customerEntity, final Command.Action action) {
@@ -276,14 +234,13 @@ public class CustomerService {
 
     final ArrayList<TaskDefinition> taskDefinitions = new ArrayList<>();
     this.taskDefinitionRepository.findByAssignedCommandsContaining(action.name())
-        .forEach(taskDefinitionEntity -> {
-          this.taskInstanceRepository.findByCustomerAndTaskDefinition(customerEntity, taskDefinitionEntity)
-              .forEach(taskInstanceEntity -> {
-                if (taskInstanceEntity.getExecutedBy() == null) {
-                  taskDefinitions.add(TaskDefinitionMapper.map(taskDefinitionEntity));
-                }
-              });
-        });
+        .forEach(taskDefinitionEntity ->
+            this.taskInstanceRepository.findByCustomerAndTaskDefinition(customerEntity, taskDefinitionEntity)
+            .forEach(taskInstanceEntity -> {
+              if (taskInstanceEntity.getExecutedBy() == null) {
+                taskDefinitions.add(TaskDefinitionMapper.map(taskDefinitionEntity));
+              }
+            }));
     processStep.setTaskDefinitions(taskDefinitions);
 
     return processStep;

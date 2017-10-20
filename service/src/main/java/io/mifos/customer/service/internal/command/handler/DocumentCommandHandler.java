@@ -71,11 +71,9 @@ public class DocumentCommandHandler {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_DOCUMENT)
   public DocumentEvent process(final CreateDocumentCommand command) throws IOException {
-
-
-    final CustomerEntity customerEntity = customerRepository.findByIdentifier(command.getCustomerIdentifier());
-    final DocumentEntity documentEntity = DocumentMapper.map(command.getCustomerDocument(), customerEntity);
-    documentRepository.save(documentEntity);
+    customerRepository.findByIdentifier(command.getCustomerIdentifier())
+        .map(customerEntity -> DocumentMapper.map(command.getCustomerDocument(), customerEntity))
+        .ifPresent(documentRepository::save);
 
     return new DocumentEvent(command.getCustomerIdentifier(), command.getCustomerDocument().getIdentifier());
   }
@@ -90,10 +88,12 @@ public class DocumentCommandHandler {
             ServiceException.notFound("Document ''{0}'' for customer ''{1}'' not found",
                 command.getCustomerDocument().getIdentifier(), command.getCustomerIdentifier()));
 
-    final CustomerEntity customerEntity = customerRepository.findByIdentifier(command.getCustomerIdentifier());
-    final DocumentEntity documentEntity = DocumentMapper.map(command.getCustomerDocument(), customerEntity);
-    documentEntity.setId(existingDocument.getId());
-    documentRepository.save(documentEntity);
+    customerRepository.findByIdentifier(command.getCustomerIdentifier())
+        .map(customerEntity -> DocumentMapper.map(command.getCustomerDocument(), customerEntity))
+        .ifPresent(documentEntity -> {
+          documentEntity.setId(existingDocument.getId());
+          documentRepository.save(documentEntity);
+        });
 
     return new DocumentEvent(command.getCustomerIdentifier(), command.getCustomerDocument().getIdentifier());
   }

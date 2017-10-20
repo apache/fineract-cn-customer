@@ -20,8 +20,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public interface IdentificationCardRepository extends JpaRepository<IdentificationCardEntity, Long> {
@@ -31,5 +31,5 @@ public interface IdentificationCardRepository extends JpaRepository<Identificati
 
   Optional<IdentificationCardEntity> findByNumber(final String number);
 
-  List<IdentificationCardEntity> findByCustomer(final CustomerEntity customerEntity);
+  Stream<IdentificationCardEntity> findByCustomer(final CustomerEntity customerEntity);
 }
