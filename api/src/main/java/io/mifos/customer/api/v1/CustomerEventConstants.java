@@ -49,6 +49,7 @@ public interface CustomerEventConstants {
 
   String POST_DOCUMENT = "post-document";
   String PUT_DOCUMENT = "put-document";
+  String DELETE_DOCUMENT = "delete-document";
   String POST_DOCUMENT_PAGE = "post-document-page";
   String DELETE_DOCUMENT_PAGE = "delete-document-page";
   String POST_DOCUMENT_COMPLETE = "post-document-complete";
@@ -81,6 +82,7 @@ public interface CustomerEventConstants {
 
   String SELECTOR_POST_DOCUMENT = SELECTOR_NAME + " = '" + POST_DOCUMENT + "'";
   String SELECTOR_PUT_DOCUMENT = SELECTOR_NAME + " = '" + PUT_DOCUMENT + "'";
+  String SELECTOR_DELETE_DOCUMENT = SELECTOR_NAME + " = '" + DELETE_DOCUMENT + "'";
   String SELECTOR_POST_DOCUMENT_PAGE = SELECTOR_NAME + " = '" + POST_DOCUMENT_PAGE + "'";
   String SELECTOR_DELETE_DOCUMENT_PAGE = SELECTOR_NAME + " = '" + DELETE_DOCUMENT_PAGE + "'";
   String SELECTOR_POST_DOCUMENT_COMPLETE = SELECTOR_NAME + " = '" + POST_DOCUMENT_COMPLETE + "'";

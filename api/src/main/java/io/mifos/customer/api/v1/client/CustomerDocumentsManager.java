@@ -87,6 +87,20 @@ public interface CustomerDocumentsManager {
       @RequestBody final CustomerDocument customerDocument);
 
 
+  @RequestMapping(
+      value = "/customers/{customeridentifier}/documents/{documentidentifier}",
+      method = RequestMethod.DELETE,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = CompletedDocumentCannotBeChangedException.class)
+  })
+  void deleteDocument(
+      @PathVariable("customeridentifier") final String customerIdentifier,
+      @PathVariable("documentidentifier") final String documentIdentifier);
+
+
   /**
    * Once a document is "completed" its name and images cannot be changed again.  Only completed
    * documents should be referenced by other services.
