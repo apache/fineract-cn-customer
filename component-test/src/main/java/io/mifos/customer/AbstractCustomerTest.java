@@ -29,10 +29,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -46,6 +50,7 @@ import org.springframework.test.context.junit4.SpringRunner;
     classes = {AbstractCustomerTest.TestConfiguration.class})
 public class AbstractCustomerTest extends SuiteTestEnvironment {
   static final String TEST_USER = "maatkare";
+  private static final String LOGGER_NAME = "test-logger";
 
   @Configuration
   @EnableEventRecording
@@ -61,6 +66,11 @@ public class AbstractCustomerTest extends SuiteTestEnvironment {
     public TestConfiguration() {
       super();
     }
+
+    @Bean(name = LOGGER_NAME)
+    public Logger logger() {
+      return LoggerFactory.getLogger(LOGGER_NAME);
+    }
   }
 
   @ClassRule
@@ -70,14 +80,22 @@ public class AbstractCustomerTest extends SuiteTestEnvironment {
   public final TenantApplicationSecurityEnvironmentTestRule tenantApplicationSecurityEnvironment
       = new TenantApplicationSecurityEnvironmentTestRule(testEnvironment, this::waitForInitialize);
 
+  @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
   @Autowired
   CustomerManager customerManager;
 
+  @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
   @Autowired
   CustomerDocumentsManager customerDocumentsManager;
 
+  @SuppressWarnings({"SpringAutowiredFieldsWarningInspection", "SpringJavaAutowiringInspection"})
   @Autowired
   EventRecorder eventRecorder;
+
+  @SuppressWarnings("SpringAutowiredFieldsWarningInspection")
+  @Autowired
+  @Qualifier(LOGGER_NAME)
+  Logger logger;
 
   private AutoUserContext userContext;
 

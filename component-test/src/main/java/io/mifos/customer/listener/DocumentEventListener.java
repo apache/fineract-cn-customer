@@ -51,6 +51,16 @@ public class DocumentEventListener {
 
   @JmsListener(
       destination = CustomerEventConstants.DESTINATION,
+      selector = CustomerEventConstants.SELECTOR_PUT_DOCUMENT
+  )
+  public void putDocumentEvent(
+      @Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+      final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.PUT_DOCUMENT, payload, DocumentEvent.class);
+  }
+
+  @JmsListener(
+      destination = CustomerEventConstants.DESTINATION,
       selector = CustomerEventConstants.SELECTOR_POST_DOCUMENT_PAGE
   )
   public void postDocumentPageEvent(

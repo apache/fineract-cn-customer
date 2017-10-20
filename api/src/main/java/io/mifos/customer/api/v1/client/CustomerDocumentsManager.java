@@ -71,6 +71,21 @@ public interface CustomerDocumentsManager {
       @RequestBody final CustomerDocument customerDocument);
 
 
+  @RequestMapping(
+      value = "/customers/{customeridentifier}/documents/{documentidentifier}",
+      method = RequestMethod.PUT,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = DocumentValidationException.class)
+  })
+  void changeDocument(
+      @PathVariable("customeridentifier") final String customerIdentifier,
+      @PathVariable("documentidentifier") final String documentIdentifier,
+      @RequestBody final CustomerDocument customerDocument);
+
+
   /**
    * Once a document is "completed" its name and images cannot be changed again.  Only completed
    * documents should be referenced by other services.

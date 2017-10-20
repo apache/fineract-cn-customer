@@ -22,6 +22,10 @@ dependencies {
             [group: 'io.github.openfeign.form', name: 'feign-form', version: '2.1.0'],
             [group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '2.1.0']
     )
+
+    testCompile(
+            [group: 'io.mifos.core', name: 'test', version: versions.frameworktest],
+    )
 }
 
 publishing {

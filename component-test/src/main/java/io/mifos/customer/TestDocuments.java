@@ -45,24 +45,24 @@ public class TestDocuments extends AbstractCustomerTest {
 
   @Test
   public void shouldUploadEditThenCompleteDocument() throws InterruptedException, IOException {
-    //Prepare test.
+    logger.info("Prepare test");
     final Customer customer = CustomerGenerator.createRandomCustomer();
     customerManager.createCustomer(customer);
-    eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier()));
 
 
-    //Check that document "stub" can be created.
+    logger.info("Check that document \"stub\" can be created");
     final CustomerDocument customerDocument = CustomerDocumentGenerator.createRandomCustomerDocument();
     customerDocumentsManager.createDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
-    eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT,
-        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier()));
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
 
     final CustomerDocument createdCustomerDocument = customerDocumentsManager.getDocument(
         customer.getIdentifier(), customerDocument.getIdentifier());
     Assert.assertEquals(customerDocument, createdCustomerDocument);
 
 
-    //Check that pages can be created.
+    logger.info("Check that pages can be created");
     for (int i = 0; i < 10; i++) {
       createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), i);
     }
@@ -73,10 +73,10 @@ public class TestDocuments extends AbstractCustomerTest {
     Assert.assertEquals(expectedPageNumbers, pageNumbers);
 
 
-    //Check that a page can be deleted.
+    logger.info("Check that a page can be deleted");
     customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
-    eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
-        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 9));
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
+        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 9)));
 
     final List<Integer> changedPageNumbers = customerDocumentsManager.getDocumentPageNumbers(
         customer.getIdentifier(), customerDocument.getIdentifier());
@@ -90,10 +90,10 @@ public class TestDocuments extends AbstractCustomerTest {
     catch (final NotFoundException ignored) {}
 
 
-    //Check that a document which is missing pages cannot be completed
+    logger.info("Check that a document which is missing pages cannot be completed");
     customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 2);
-    eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
-        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 2));
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT_PAGE,
+        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 2)));
 
     try {
       customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), true);
@@ -104,11 +104,23 @@ public class TestDocuments extends AbstractCustomerTest {
     createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 2);
 
 
-    //Check that a valid document can be completed.
+    logger.info("Check that a document's description can be changed.");
+    customerDocument.setDescription("new description");
+    customerDocumentsManager.changeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.PUT_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
+
+    {
+      final CustomerDocument changedCustomerDocument = customerDocumentsManager.getDocument(customer.getIdentifier(), customerDocument.getIdentifier());
+      Assert.assertEquals(customerDocument, changedCustomerDocument);
+    }
+
+
+    logger.info("Check that a valid document can be completed");
     final TimeStampChecker timeStampChecker = TimeStampChecker.roughlyNow();
     customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), true);
-    eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT_COMPLETE,
-        new DocumentPageEvent(customer.getIdentifier(), customerDocument.getIdentifier(), 9));
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT_COMPLETE,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
 
     final CustomerDocument completedDocument = customerDocumentsManager.getDocument(
         customer.getIdentifier(), customerDocument.getIdentifier());
@@ -116,7 +128,7 @@ public class TestDocuments extends AbstractCustomerTest {
     timeStampChecker.assertCorrect(completedDocument.getCreatedOn());
 
 
-    //Check that document can't be changed after completion
+    logger.info("Check that document can't be changed after completion");
     try {
       createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
       Assert.fail("Adding another page after the document is completed shouldn't be possible.");
@@ -129,7 +141,7 @@ public class TestDocuments extends AbstractCustomerTest {
     catch (final CompletedDocumentCannotBeChangedException ignored) {}
 
 
-    //Check that document can't be uncompleted.
+    logger.info("Check that document can't be uncompleted");
     try {
       customerDocumentsManager.completeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), false);
       Assert.fail("It shouldn't be possible to change a document from completed to uncompleted.");
@@ -137,7 +149,7 @@ public class TestDocuments extends AbstractCustomerTest {
     catch (final CompletedDocumentCannotBeChangedException ignored) {}
 
 
-    //Check that document is in the list.
+    logger.info("Check that document is in the list");
     final List<CustomerDocument> documents = customerDocumentsManager.getDocuments(customer.getIdentifier());
     final boolean documentIsInList = documents.stream().anyMatch(x ->
         (x.getIdentifier().equals(customerDocument.getIdentifier())) &&

@@ -55,6 +55,7 @@ public class DocumentMapper {
     ret.setCreatedBy(documentEntity.getCreatedBy());
     ret.setCreatedOn(DateConverter.toIsoString(documentEntity.getCreatedOn()));
     ret.setIdentifier(documentEntity.getIdentifier());
+    ret.setDescription(documentEntity.getDescription());
     return ret;
   }
 
@@ -65,6 +66,7 @@ public class DocumentMapper {
     ret.setCreatedBy(UserContextHolder.checkedGetUser());
     ret.setCreatedOn(LocalDateTime.now(Clock.systemUTC()));
     ret.setIdentifier(customerDocument.getIdentifier());
+    ret.setDescription(customerDocument.getDescription());
     return ret;
   }
 }
