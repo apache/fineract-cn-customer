@@ -61,6 +61,16 @@ public class DocumentEventListener {
 
   @JmsListener(
       destination = CustomerEventConstants.DESTINATION,
+      selector = CustomerEventConstants.SELECTOR_DELETE_DOCUMENT
+  )
+  public void deleteDocumentEvent(
+      @Header(TenantHeaderFilter.TENANT_HEADER) final String tenant,
+      final String payload) {
+    this.eventRecorder.event(tenant, CustomerEventConstants.DELETE_DOCUMENT, payload, DocumentEvent.class);
+  }
+
+  @JmsListener(
+      destination = CustomerEventConstants.DESTINATION,
       selector = CustomerEventConstants.SELECTOR_POST_DOCUMENT_PAGE
   )
   public void postDocumentPageEvent(

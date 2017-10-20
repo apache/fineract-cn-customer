@@ -78,12 +78,27 @@ public interface CustomerDocumentsManager {
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
   @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = CompletedDocumentCannotBeChangedException.class),
       @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = DocumentValidationException.class)
   })
   void changeDocument(
       @PathVariable("customeridentifier") final String customerIdentifier,
       @PathVariable("documentidentifier") final String documentIdentifier,
       @RequestBody final CustomerDocument customerDocument);
+
+
+  @RequestMapping(
+      value = "/customers/{customeridentifier}/documents/{documentidentifier}",
+      method = RequestMethod.DELETE,
+      produces = MediaType.ALL_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = CompletedDocumentCannotBeChangedException.class)
+  })
+  void deleteDocument(
+      @PathVariable("customeridentifier") final String customerIdentifier,
+      @PathVariable("documentidentifier") final String documentIdentifier);
 
 
   /**

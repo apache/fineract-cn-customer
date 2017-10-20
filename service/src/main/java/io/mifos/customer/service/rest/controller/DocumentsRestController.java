@@ -125,10 +125,34 @@ public class DocumentsRestController {
     throwIfCustomerNotExists(customerIdentifier);
     throwIfCustomerDocumentNotExists(customerIdentifier, documentIdentifier);
 
+    throwIfDocumentCompleted(customerIdentifier, documentIdentifier);
+
     if (!instance.getIdentifier().equals(documentIdentifier))
       throw ServiceException.badRequest("Document identifier in request body must match document identifier in request path.");
 
     commandGateway.process(new ChangeDocumentCommand(customerIdentifier, instance));
+
+    return ResponseEntity.accepted().build();
+  }
+
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.DOCUMENTS)
+  @RequestMapping(
+      value = "/{documentidentifier}",
+      method = RequestMethod.DELETE,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.ALL_VALUE
+  )
+  public @ResponseBody
+  ResponseEntity<Void> deleteDocument(
+      @PathVariable("customeridentifier") final String customerIdentifier,
+      @PathVariable("documentidentifier") final String documentIdentifier) {
+    throwIfCustomerNotExists(customerIdentifier);
+    throwIfCustomerDocumentNotExists(customerIdentifier, documentIdentifier);
+
+    throwIfDocumentCompleted(customerIdentifier, documentIdentifier);
+
+    commandGateway.process(new DeleteDocumentCommand(customerIdentifier, documentIdentifier));
 
     return ResponseEntity.accepted().build();
   }

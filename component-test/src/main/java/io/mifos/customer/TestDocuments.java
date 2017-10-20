@@ -44,6 +44,37 @@ import java.util.stream.IntStream;
 public class TestDocuments extends AbstractCustomerTest {
 
   @Test
+  public void shouldUploadThenDeleteInCompleteDocument() throws InterruptedException, IOException {
+    logger.info("Prepare test");
+    final Customer customer = CustomerGenerator.createRandomCustomer();
+    customerManager.createCustomer(customer);
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier()));
+
+    final CustomerDocument customerDocument = CustomerDocumentGenerator.createRandomCustomerDocument();
+    customerDocumentsManager.createDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.POST_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
+
+    for (int i = 0; i < 5; i++) {
+      createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), i);
+    }
+
+    logger.info("Delete document");
+    customerDocumentsManager.deleteDocument(customer.getIdentifier(), customerDocument.getIdentifier());
+    Assert.assertTrue(eventRecorder.wait(CustomerEventConstants.DELETE_DOCUMENT,
+        new DocumentEvent(customer.getIdentifier(), customerDocument.getIdentifier())));
+
+    try {
+      customerDocumentsManager.getDocument(customer.getIdentifier(), customerDocument.getIdentifier());
+      Assert.fail("Deleted document should not be findable");
+    }
+    catch (final NotFoundException ignored) {}
+
+    final List<CustomerDocument> customersDocuments = customerDocumentsManager.getDocuments(customer.getIdentifier());
+    Assert.assertFalse(customersDocuments.contains(customerDocument));
+  }
+
+  @Test
   public void shouldUploadEditThenCompleteDocument() throws InterruptedException, IOException {
     logger.info("Prepare test");
     final Customer customer = CustomerGenerator.createRandomCustomer();
@@ -128,7 +159,7 @@ public class TestDocuments extends AbstractCustomerTest {
     timeStampChecker.assertCorrect(completedDocument.getCreatedOn());
 
 
-    logger.info("Check that document can't be changed after completion");
+    logger.info("Check that document can't be changed or removed after completion");
     try {
       createDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 9);
       Assert.fail("Adding another page after the document is completed shouldn't be possible.");
@@ -137,6 +168,16 @@ public class TestDocuments extends AbstractCustomerTest {
     try {
       customerDocumentsManager.deleteDocumentPage(customer.getIdentifier(), customerDocument.getIdentifier(), 8);
       Assert.fail("Deleting a page after the document is completed shouldn't be possible.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
+    try {
+      customerDocumentsManager.changeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+      Assert.fail("Changing a document after it is completed shouldn't be possible.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
+    try {
+      customerDocumentsManager.deleteDocument(customer.getIdentifier(), customerDocument.getIdentifier());
+      Assert.fail("Changing a document after it is completed shouldn't be possible.");
     }
     catch (final CompletedDocumentCannotBeChangedException ignored) {}
 

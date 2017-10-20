@@ -100,6 +100,22 @@ public class DocumentCommandHandler {
 
   @Transactional
   @CommandHandler
+  @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.DELETE_DOCUMENT)
+  public DocumentEvent process(final DeleteDocumentCommand command) throws IOException {
+    final DocumentEntity existingDocument = documentRepository.findByCustomerIdAndDocumentIdentifier(
+        command.getCustomerIdentifier(), command.getDocumentIdentifier())
+        .orElseThrow(() ->
+            ServiceException.notFound("Document ''{0}'' for customer ''{1}'' not found",
+                command.getDocumentIdentifier(), command.getCustomerIdentifier()));
+    documentPageRepository.findByCustomerIdAndDocumentIdentifier(command.getCustomerIdentifier(), command.getDocumentIdentifier())
+        .forEach(documentPageRepository::delete);
+    documentRepository.delete(existingDocument);
+
+    return new DocumentEvent(command.getCustomerIdentifier(), command.getDocumentIdentifier());
+  }
+
+  @Transactional
+  @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_DOCUMENT_COMPLETE)
   public DocumentEvent process(final CompleteDocumentCommand command) throws IOException {
     final DocumentEntity documentEntity = documentRepository.findByCustomerIdAndDocumentIdentifier(
