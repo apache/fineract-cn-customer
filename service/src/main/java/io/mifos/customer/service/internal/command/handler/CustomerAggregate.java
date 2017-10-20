@@ -25,53 +25,11 @@ import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.api.v1.events.ScanEvent;
-import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
-import io.mifos.customer.catalog.service.internal.repository.CatalogRepository;
-import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
-import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
-import io.mifos.customer.catalog.service.internal.repository.FieldValueEntity;
-import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
-import io.mifos.customer.service.ServiceConstants;
-import io.mifos.customer.service.internal.command.ActivateCustomerCommand;
-import io.mifos.customer.service.internal.command.CloseCustomerCommand;
-import io.mifos.customer.service.internal.command.CreateCustomerCommand;
-import io.mifos.customer.service.internal.command.CreateIdentificationCardCommand;
-import io.mifos.customer.service.internal.command.CreateIdentificationCardScanCommand;
-import io.mifos.customer.service.internal.command.CreatePortraitCommand;
-import io.mifos.customer.service.internal.command.DeleteIdentificationCardCommand;
-import io.mifos.customer.service.internal.command.DeleteIdentificationCardScanCommand;
-import io.mifos.customer.service.internal.command.DeletePortraitCommand;
-import io.mifos.customer.service.internal.command.LockCustomerCommand;
-import io.mifos.customer.service.internal.command.ReopenCustomerCommand;
-import io.mifos.customer.service.internal.command.UnlockCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateAddressCommand;
-import io.mifos.customer.service.internal.command.UpdateContactDetailsCommand;
-import io.mifos.customer.service.internal.command.UpdateCustomerCommand;
-import io.mifos.customer.service.internal.command.UpdateIdentificationCardCommand;
-import io.mifos.customer.service.internal.mapper.AddressMapper;
-import io.mifos.customer.service.internal.mapper.CommandMapper;
-import io.mifos.customer.service.internal.mapper.ContactDetailMapper;
-import io.mifos.customer.service.internal.mapper.CustomerMapper;
-import io.mifos.customer.service.internal.mapper.FieldValueMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardMapper;
-import io.mifos.customer.service.internal.mapper.IdentificationCardScanMapper;
-import io.mifos.customer.service.internal.mapper.PortraitMapper;
-import io.mifos.customer.service.internal.repository.AddressEntity;
-import io.mifos.customer.service.internal.repository.AddressRepository;
-import io.mifos.customer.service.internal.repository.CommandRepository;
-import io.mifos.customer.service.internal.repository.ContactDetailEntity;
-import io.mifos.customer.service.internal.repository.ContactDetailRepository;
-import io.mifos.customer.service.internal.repository.CustomerEntity;
-import io.mifos.customer.service.internal.repository.CustomerRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardRepository;
-import io.mifos.customer.service.internal.repository.IdentificationCardScanEntity;
-import io.mifos.customer.service.internal.repository.IdentificationCardScanRepository;
-import io.mifos.customer.service.internal.repository.PortraitEntity;
-import io.mifos.customer.service.internal.repository.PortraitRepository;
-import org.slf4j.Logger;
+import io.mifos.customer.catalog.service.internal.repository.*;
+import io.mifos.customer.service.internal.command.*;
+import io.mifos.customer.service.internal.mapper.*;
+import io.mifos.customer.service.internal.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -84,11 +42,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 @Aggregate
 public class CustomerAggregate {
-
-  private final Logger logger;
   private final AddressRepository addressRepository;
   private final CustomerRepository customerRepository;
   private final IdentificationCardRepository identificationCardRepository;
@@ -102,8 +58,7 @@ public class CustomerAggregate {
   private final TaskAggregate taskAggregate;
 
   @Autowired
-  public CustomerAggregate(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
-                           final AddressRepository addressRepository,
+  public CustomerAggregate(final AddressRepository addressRepository,
                            final CustomerRepository customerRepository,
                            final IdentificationCardRepository identificationCardRepository,
                            final IdentificationCardScanRepository identificationCardScanRepository,
@@ -115,7 +70,6 @@ public class CustomerAggregate {
                            final CommandRepository commandRepository,
                            final TaskAggregate taskAggregate) {
     super();
-    this.logger = logger;
     this.addressRepository = addressRepository;
     this.customerRepository = customerRepository;
     this.identificationCardRepository = identificationCardRepository;
@@ -170,7 +124,7 @@ public class CustomerAggregate {
   public String updateCustomer(final UpdateCustomerCommand updateCustomerCommand) {
     final Customer customer = updateCustomerCommand.customer();
 
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(customer.getIdentifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(customer.getIdentifier());
 
     customerEntity.setGivenName(customer.getGivenName());
     customerEntity.setMiddleName(customer.getMiddleName());
@@ -218,7 +172,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.ACTIVATE_CUSTOMER)
   public String activateCustomer(final ActivateCustomerCommand activateCustomerCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(activateCustomerCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(activateCustomerCommand.identifier());
 
     if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.ACTIVATE.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", activateCustomerCommand.identifier());
@@ -241,7 +195,8 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.LOCK_CUSTOMER)
   public String lockCustomer(final LockCustomerCommand lockCustomerCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(lockCustomerCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(lockCustomerCommand.identifier());
+
     customerEntity.setCurrentState(Customer.State.LOCKED.name());
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
@@ -261,7 +216,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.UNLOCK_CUSTOMER)
   public String unlockCustomer(final UnlockCustomerCommand unlockCustomerCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(unlockCustomerCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(unlockCustomerCommand.identifier());
 
     if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.UNLOCK.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", unlockCustomerCommand.identifier());
@@ -284,7 +239,8 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.CLOSE_CUSTOMER)
   public String closeCustomer(final CloseCustomerCommand closeCustomerCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(closeCustomerCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(closeCustomerCommand.identifier());
+
     customerEntity.setCurrentState(Customer.State.CLOSED.name());
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
@@ -304,7 +260,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.REOPEN_CUSTOMER)
   public String reopenCustomer(final ReopenCustomerCommand reopenCustomerCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(reopenCustomerCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(reopenCustomerCommand.identifier());
 
     if (this.taskAggregate.openTasksForCustomerExist(customerEntity, Command.Action.REOPEN.name())) {
       throw ServiceException.conflict("Open Tasks for customer {0} exists.", reopenCustomerCommand.identifier());
@@ -327,7 +283,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_ADDRESS)
   public String updateAddress(final UpdateAddressCommand updateAddressCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(updateAddressCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(updateAddressCommand.identifier());
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
@@ -347,7 +303,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_CONTACT_DETAILS)
   public String updateContactDetails(final UpdateContactDetailsCommand updateContactDetailsCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(updateContactDetailsCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(updateContactDetailsCommand.identifier());
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
@@ -374,7 +330,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_IDENTIFICATION_CARD)
   public String createIdentificationCard(final CreateIdentificationCardCommand createIdentificationCardCommand) {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(createIdentificationCardCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(createIdentificationCardCommand.identifier());
 
     final IdentificationCardEntity identificationCardEntity = IdentificationCardMapper.map(createIdentificationCardCommand.identificationCard());
 
@@ -507,7 +463,7 @@ public class CustomerAggregate {
       return null;
     }
 
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(createPortraitCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(createPortraitCommand.identifier());
 
     final PortraitEntity portraitEntity = PortraitMapper.map(createPortraitCommand.portrait());
     portraitEntity.setCustomer(customerEntity);
@@ -525,7 +481,7 @@ public class CustomerAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.DELETE_PORTRAIT)
   public String deletePortrait(final DeletePortraitCommand deletePortraitCommand) throws IOException {
-    final CustomerEntity customerEntity = this.customerRepository.findByIdentifier(deletePortraitCommand.identifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(deletePortraitCommand.identifier());
 
     this.portraitRepository.deleteByCustomer(customerEntity);
 
@@ -556,5 +512,10 @@ public class CustomerAggregate {
             })
             .collect(Collectors.toList())
     );
+  }
+
+  private CustomerEntity findCustomerEntityOrThrow(String identifier) {
+    return this.customerRepository.findByIdentifier(identifier)
+        .orElseThrow(() -> ServiceException.notFound("Customer ''{0}'' not found", identifier));
   }
 }

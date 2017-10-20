@@ -22,6 +22,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
 
@@ -31,7 +33,7 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
   Page<CustomerEntity> findByIdentifierContainingOrGivenNameContainingOrSurnameContaining(
       final String identifier, final String givenName, final String surname, final Pageable pageable);
 
-  CustomerEntity findByIdentifier(final String identifier);
+  Optional<CustomerEntity> findByIdentifier(final String identifier);
 
   Page<CustomerEntity> findByCurrentStateNot(final String state, final Pageable pageable);
 

@@ -19,6 +19,7 @@ import io.mifos.core.api.util.UserContextHolder;
 import io.mifos.core.command.annotation.Aggregate;
 import io.mifos.core.command.annotation.CommandHandler;
 import io.mifos.core.command.annotation.EventEmitter;
+import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
@@ -95,8 +96,7 @@ public class TaskAggregate {
     final TaskDefinitionEntity taskDefinitionEntity =
         this.taskDefinitionRepository.findByIdentifier(addTaskDefinitionToCustomerCommand.taskIdentifier());
 
-    final CustomerEntity customerEntity =
-        this.customerRepository.findByIdentifier(addTaskDefinitionToCustomerCommand.customerIdentifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(addTaskDefinitionToCustomerCommand.customerIdentifier());
 
     this.taskInstanceRepository.save(TaskInstanceMapper.create(taskDefinitionEntity, customerEntity));
 
@@ -107,8 +107,7 @@ public class TaskAggregate {
   @CommandHandler
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.PUT_CUSTOMER)
   public String executeTaskForCustomer(final ExecuteTaskForCustomerCommand executeTaskForCustomerCommand) {
-    final CustomerEntity customerEntity =
-        this.customerRepository.findByIdentifier(executeTaskForCustomerCommand.customerIdentifier());
+    final CustomerEntity customerEntity = findCustomerEntityOrThrow(executeTaskForCustomerCommand.customerIdentifier());
     final List<TaskInstanceEntity> taskInstanceEntities = this.taskInstanceRepository.findByCustomer(customerEntity);
     if (taskInstanceEntities != null) {
       final Optional<TaskInstanceEntity> taskInstanceEntityOptional = taskInstanceEntities
@@ -159,5 +158,10 @@ public class TaskAggregate {
     } else {
       return false;
     }
+  }
+
+  private CustomerEntity findCustomerEntityOrThrow(String identifier) {
+    return this.customerRepository.findByIdentifier(identifier)
+        .orElseThrow(() -> ServiceException.notFound("Customer ''{0}'' not found", identifier));
   }
 }
