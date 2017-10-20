@@ -27,6 +27,7 @@ public final class CustomerDocumentGenerator {
   public static CustomerDocument createRandomCustomerDocument() {
     final CustomerDocument ret = new CustomerDocument();
     ret.setIdentifier(RandomStringUtils.randomAlphanumeric(8));
+    ret.setDescription(RandomStringUtils.randomAlphanumeric(4096));
     return ret;
   }
 }

@@ -37,8 +37,12 @@ public class DocumentEntity {
   @JoinColumn(name = "customer_id")
   private CustomerEntity customer;
 
-  @Column(name = "identifier")
+  @Column(name = "identifier", nullable = false)
   private String identifier;
+
+  @SuppressWarnings("DefaultAnnotationParam")
+  @Column(name = "description", nullable = true)
+  private String description;
 
   @Column(name = "is_completed", nullable = false)
   private Boolean completed;
@@ -75,6 +79,14 @@ public class DocumentEntity {
 
   public void setIdentifier(String identifier) {
     this.identifier = identifier;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   public Boolean getCompleted() {
