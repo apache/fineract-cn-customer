@@ -125,6 +125,8 @@ public class DocumentsRestController {
     throwIfCustomerNotExists(customerIdentifier);
     throwIfCustomerDocumentNotExists(customerIdentifier, documentIdentifier);
 
+    throwIfDocumentCompleted(customerIdentifier, documentIdentifier);
+
     if (!instance.getIdentifier().equals(documentIdentifier))
       throw ServiceException.badRequest("Document identifier in request body must match document identifier in request path.");
 

@@ -139,6 +139,11 @@ public class TestDocuments extends AbstractCustomerTest {
       Assert.fail("Deleting a page after the document is completed shouldn't be possible.");
     }
     catch (final CompletedDocumentCannotBeChangedException ignored) {}
+    try {
+      customerDocumentsManager.changeDocument(customer.getIdentifier(), customerDocument.getIdentifier(), customerDocument);
+      Assert.fail("Changing a document after it is completed shouldn't be possible.");
+    }
+    catch (final CompletedDocumentCannotBeChangedException ignored) {}
 
 
     logger.info("Check that document can't be uncompleted");

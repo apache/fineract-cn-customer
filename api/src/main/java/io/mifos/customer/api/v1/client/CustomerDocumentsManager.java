@@ -78,6 +78,7 @@ public interface CustomerDocumentsManager {
       consumes = MediaType.APPLICATION_JSON_VALUE
   )
   @ThrowsExceptions({
+      @ThrowsException(status = HttpStatus.CONFLICT, exception = CompletedDocumentCannotBeChangedException.class),
       @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = DocumentValidationException.class)
   })
   void changeDocument(
