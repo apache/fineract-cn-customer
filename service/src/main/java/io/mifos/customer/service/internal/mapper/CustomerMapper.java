@@ -45,6 +45,9 @@ public final class CustomerMapper {
     customerEntity.setAssignedOffice(customer.getAssignedOffice());
     customerEntity.setAssignedEmployee(customer.getAssignedEmployee());
     customerEntity.setCurrentState(customer.getCurrentState());
+    if (customer.getApplicationDate() != null) {
+      customerEntity.setApplicationDate(DateConverter.dateFromIsoString(customer.getApplicationDate()));
+    }
     customerEntity.setCreatedBy(UserContextHolder.checkedGetUser());
     customerEntity.setCreatedOn(LocalDateTime.now(Clock.systemUTC()));
     return customerEntity;
@@ -64,6 +67,9 @@ public final class CustomerMapper {
     customer.setAssignedOffice(customerEntity.getAssignedOffice());
     customer.setAssignedEmployee(customerEntity.getAssignedEmployee());
     customer.setCurrentState(customerEntity.getCurrentState());
+    if (customerEntity.getApplicationDate() != null) {
+      customer.setApplicationDate(DateConverter.toIsoString(customerEntity.getApplicationDate()));
+    }
     customer.setCreatedBy(customerEntity.getCreatedBy());
     customer.setCreatedOn(DateConverter.toIsoString(customerEntity.getCreatedOn()));
 

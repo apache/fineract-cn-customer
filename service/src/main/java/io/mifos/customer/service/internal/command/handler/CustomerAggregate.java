@@ -179,6 +179,9 @@ public class CustomerAggregate {
     }
 
     customerEntity.setCurrentState(Customer.State.ACTIVE.name());
+    if (customerEntity.getApplicationDate() == null) {
+      customerEntity.setApplicationDate(LocalDate.now(Clock.systemUTC()));
+    }
     customerEntity.setLastModifiedBy(UserContextHolder.checkedGetUser());
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
