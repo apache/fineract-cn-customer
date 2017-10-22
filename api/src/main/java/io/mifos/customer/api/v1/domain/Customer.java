@@ -60,6 +60,7 @@ public final class Customer {
   @Valid
   private List<ContactDetail> contactDetails;
   private State currentState;
+  private String applicationDate;
   private List<Value> customValues;
   private String createdBy;
   private String createdOn;
@@ -180,6 +181,14 @@ public final class Customer {
 
   public void setCurrentState(final String currentState) {
     this.currentState = State.valueOf(currentState);
+  }
+
+  public String getApplicationDate() {
+    return this.applicationDate;
+  }
+
+  public void setApplicationDate(final String applicationDate) {
+    this.applicationDate = applicationDate;
   }
 
   public List<Value> getCustomValues() {

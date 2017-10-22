@@ -15,6 +15,7 @@
  */
 package io.mifos.customer.service.internal.repository;
 
+import io.mifos.core.mariadb.util.LocalDateConverter;
 import io.mifos.core.mariadb.util.LocalDateTimeConverter;
 
 import javax.persistence.CascadeType;
@@ -29,6 +30,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -63,6 +65,9 @@ public class CustomerEntity {
   private String assignedEmployee;
   @Column(name = "current_state")
   private String currentState;
+  @Column(name = "application_date")
+  @Convert(converter = LocalDateConverter.class)
+  private LocalDate applicationDate;
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "address_id")
   private AddressEntity address;
@@ -183,6 +188,14 @@ public class CustomerEntity {
 
   public void setCurrentState(final String currentState) {
     this.currentState = currentState;
+  }
+
+  public LocalDate getApplicationDate() {
+    return this.applicationDate;
+  }
+
+  public void setApplicationDate(final LocalDate applicationDate) {
+    this.applicationDate = applicationDate;
   }
 
   public AddressEntity getAddress() {

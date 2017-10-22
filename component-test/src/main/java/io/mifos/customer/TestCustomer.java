@@ -15,6 +15,7 @@
  */
 package io.mifos.customer;
 
+import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
 import io.mifos.customer.api.v1.client.CustomerNotFoundException;
@@ -37,6 +38,8 @@ import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -188,6 +191,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer activatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), activatedCustomer.getCurrentState());
+    Assert.assertNotNull(activatedCustomer.getApplicationDate());
   }
 
   @Test
@@ -214,6 +218,8 @@ public class TestCustomer extends AbstractCustomerTest {
   @Test
   public void shouldUnlockClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
+    final String applicationDate = DateConverter.toIsoString(LocalDate.now(Clock.systemUTC()));
+    customer.setApplicationDate(applicationDate);
     this.customerManager.createCustomer(customer);
 
     this.eventRecorder.wait(CustomerEventConstants.POST_CUSTOMER, customer.getIdentifier());
@@ -235,6 +241,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer unlockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), unlockedCustomer.getCurrentState());
+    Assert.assertEquals(applicationDate, unlockedCustomer.getApplicationDate());
   }
 
   @Test
