@@ -218,7 +218,7 @@ public class TestCustomer extends AbstractCustomerTest {
   @Test
   public void shouldUnlockClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    final String applicationDate = DateConverter.toIsoString(LocalDate.now(Clock.systemUTC()));
+    final String applicationDate = DateConverter.toIsoString(LocalDate.now(Clock.systemUTC())).substring(0, 10);
     customer.setApplicationDate(applicationDate);
     this.customerManager.createCustomer(customer);
 
