@@ -46,7 +46,13 @@ public final class CustomerMapper {
     customerEntity.setAssignedEmployee(customer.getAssignedEmployee());
     customerEntity.setCurrentState(customer.getCurrentState());
     if (customer.getApplicationDate() != null) {
-      customerEntity.setApplicationDate(DateConverter.dateFromIsoString(customer.getApplicationDate()));
+      final String editedApplicationDate;
+      if (!customer.getApplicationDate().endsWith("Z")) {
+        editedApplicationDate = customer.getApplicationDate() + "Z";
+      } else {
+        editedApplicationDate = customer.getApplicationDate();
+      }
+      customerEntity.setApplicationDate(DateConverter.dateFromIsoString(editedApplicationDate));
     }
     customerEntity.setCreatedBy(UserContextHolder.checkedGetUser());
     customerEntity.setCreatedOn(LocalDateTime.now(Clock.systemUTC()));
@@ -68,7 +74,9 @@ public final class CustomerMapper {
     customer.setAssignedEmployee(customerEntity.getAssignedEmployee());
     customer.setCurrentState(customerEntity.getCurrentState());
     if (customerEntity.getApplicationDate() != null) {
-      customer.setApplicationDate(DateConverter.toIsoString(customerEntity.getApplicationDate()));
+      final String editedApplicationDate =
+          DateConverter.toIsoString(customerEntity.getApplicationDate()).substring(0, 10);
+      customer.setApplicationDate(editedApplicationDate);
     }
     customer.setCreatedBy(customerEntity.getCreatedBy());
     customer.setCreatedOn(DateConverter.toIsoString(customerEntity.getCreatedOn()));
