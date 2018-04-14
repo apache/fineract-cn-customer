@@ -18,26 +18,35 @@
  */
 package io.mifos.customer.service.rest.controller;
 
-import io.mifos.anubis.annotation.AcceptedTokenType;
-import io.mifos.anubis.annotation.Permittable;
-import io.mifos.core.command.gateway.CommandGateway;
-import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.PermittableGroupIds;
 import io.mifos.customer.api.v1.domain.CustomerDocument;
-import io.mifos.customer.service.internal.command.*;
+import io.mifos.customer.service.internal.command.ChangeDocumentCommand;
+import io.mifos.customer.service.internal.command.CompleteDocumentCommand;
+import io.mifos.customer.service.internal.command.CreateDocumentCommand;
+import io.mifos.customer.service.internal.command.CreateDocumentPageCommand;
+import io.mifos.customer.service.internal.command.DeleteDocumentCommand;
+import io.mifos.customer.service.internal.command.DeleteDocumentPageCommand;
 import io.mifos.customer.service.internal.repository.DocumentPageEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.DocumentService;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.validation.Valid;
+import org.apache.fineract.cn.anubis.annotation.AcceptedTokenType;
+import org.apache.fineract.cn.anubis.annotation.Permittable;
+import org.apache.fineract.cn.command.gateway.CommandGateway;
+import org.apache.fineract.cn.lang.ServiceException;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Myrle Krantz

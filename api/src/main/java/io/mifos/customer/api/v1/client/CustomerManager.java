@@ -18,9 +18,6 @@
  */
 package io.mifos.customer.api.v1.client;
 
-import io.mifos.core.api.annotation.ThrowsException;
-import io.mifos.core.api.annotation.ThrowsExceptions;
-import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.api.v1.config.CustomerFeignClientConfig;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
@@ -31,6 +28,11 @@ import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.api.v1.domain.IdentificationCardScan;
 import io.mifos.customer.api.v1.domain.ProcessStep;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
+import java.util.List;
+import javax.validation.constraints.Size;
+import org.apache.fineract.cn.api.annotation.ThrowsException;
+import org.apache.fineract.cn.api.annotation.ThrowsExceptions;
+import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,9 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.validation.constraints.Size;
-import java.util.List;
 
 @SuppressWarnings("unused")
 @FeignClient(name="customer-v1", path="/customer/v1", configuration= CustomerFeignClientConfig.class)

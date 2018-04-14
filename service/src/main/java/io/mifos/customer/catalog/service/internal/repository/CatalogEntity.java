@@ -18,8 +18,8 @@
  */
 package io.mifos.customer.catalog.service.internal.repository;
 
-import io.mifos.core.mariadb.util.LocalDateTimeConverter;
-
+import java.time.LocalDateTime;
+import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -29,8 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.List;
+import org.apache.fineract.cn.mariadb.util.LocalDateTimeConverter;
 
 @Entity
 @Table(name = "nun_catalogs")

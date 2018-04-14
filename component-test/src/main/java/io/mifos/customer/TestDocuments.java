@@ -18,8 +18,6 @@
  */
 package io.mifos.customer;
 
-import io.mifos.core.api.util.NotFoundException;
-import io.mifos.core.test.domain.TimeStampChecker;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CompletedDocumentCannotBeChangedException;
 import io.mifos.customer.api.v1.client.DocumentValidationException;
@@ -29,17 +27,18 @@ import io.mifos.customer.api.v1.events.DocumentEvent;
 import io.mifos.customer.api.v1.events.DocumentPageEvent;
 import io.mifos.customer.util.CustomerDocumentGenerator;
 import io.mifos.customer.util.CustomerGenerator;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.fineract.cn.api.util.NotFoundException;
+import org.apache.fineract.cn.test.domain.TimeStampChecker;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 
 /**
  * @author Myrle Krantz

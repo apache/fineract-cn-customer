@@ -18,12 +18,6 @@
  */
 package io.mifos.customer.service.rest.controller;
 
-import io.mifos.anubis.annotation.AcceptedTokenType;
-import io.mifos.anubis.annotation.Permittable;
-import io.mifos.core.api.util.UserContextHolder;
-import io.mifos.core.command.gateway.CommandGateway;
-import io.mifos.core.lang.ServiceException;
-import io.mifos.core.lang.validation.constraints.ValidIdentifier;
 import io.mifos.customer.PermittableGroupIds;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
@@ -60,6 +54,18 @@ import io.mifos.customer.service.internal.command.UpdateTaskDefinitionCommand;
 import io.mifos.customer.service.internal.repository.PortraitEntity;
 import io.mifos.customer.service.internal.service.CustomerService;
 import io.mifos.customer.service.internal.service.TaskService;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.validation.Valid;
+import javax.validation.constraints.Size;
+import org.apache.fineract.cn.anubis.annotation.AcceptedTokenType;
+import org.apache.fineract.cn.anubis.annotation.Permittable;
+import org.apache.fineract.cn.api.util.UserContextHolder;
+import org.apache.fineract.cn.command.gateway.CommandGateway;
+import org.apache.fineract.cn.lang.ServiceException;
+import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -77,13 +83,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/")

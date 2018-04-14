@@ -18,15 +18,14 @@
  */
 package io.mifos.customer.service.internal.mapper;
 
-import io.mifos.core.api.util.UserContextHolder;
-import io.mifos.core.lang.DateConverter;
-import io.mifos.core.lang.DateOfBirth;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.service.internal.repository.CustomerEntity;
-
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import org.apache.fineract.cn.api.util.UserContextHolder;
+import org.apache.fineract.cn.lang.DateConverter;
+import org.apache.fineract.cn.lang.DateOfBirth;
 
 public final class CustomerMapper {
 

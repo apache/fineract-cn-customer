@@ -18,9 +18,8 @@
  */
 package io.mifos.customer.service.internal.repository;
 
-import io.mifos.core.mariadb.util.LocalDateConverter;
-import io.mifos.core.mariadb.util.LocalDateTimeConverter;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -31,8 +30,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import org.apache.fineract.cn.mariadb.util.LocalDateConverter;
+import org.apache.fineract.cn.mariadb.util.LocalDateTimeConverter;
 
 @Entity
 @Table(name = "maat_identification_cards")

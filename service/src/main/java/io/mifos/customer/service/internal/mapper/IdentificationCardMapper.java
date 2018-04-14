@@ -18,10 +18,10 @@
  */
 package io.mifos.customer.service.internal.mapper;
 
-import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.domain.ExpirationDate;
 import io.mifos.customer.api.v1.domain.IdentificationCard;
 import io.mifos.customer.service.internal.repository.IdentificationCardEntity;
+import org.apache.fineract.cn.lang.DateConverter;
 
 public final class IdentificationCardMapper {
 

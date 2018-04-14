@@ -18,10 +18,9 @@
  */
 package io.mifos.customer.api.v1.domain;
 
-import io.mifos.core.lang.validation.constraints.ValidIdentifier;
-import org.hibernate.validator.constraints.Length;
-
 import java.util.Objects;
+import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
+import org.hibernate.validator.constraints.Length;
 
 /**
  * @author Myrle Krantz

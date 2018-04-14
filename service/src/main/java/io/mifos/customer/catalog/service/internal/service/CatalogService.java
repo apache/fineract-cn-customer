@@ -18,7 +18,6 @@
  */
 package io.mifos.customer.catalog.service.internal.service;
 
-import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.service.internal.mapper.CatalogMapper;
 import io.mifos.customer.catalog.service.internal.mapper.FieldMapper;
@@ -28,15 +27,15 @@ import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
 import io.mifos.customer.catalog.service.internal.repository.FieldValueRepository;
 import io.mifos.customer.service.ServiceConstants;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.fineract.cn.lang.ServiceException;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CatalogService {

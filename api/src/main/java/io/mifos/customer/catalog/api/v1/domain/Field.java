@@ -18,12 +18,11 @@
  */
 package io.mifos.customer.catalog.api.v1.domain;
 
-import io.mifos.core.lang.validation.constraints.ValidIdentifier;
-import org.hibernate.validator.constraints.NotEmpty;
-
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class Field {
 

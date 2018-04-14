@@ -18,17 +18,16 @@
  */
 package io.mifos.customer.service.internal.mapper;
 
-import io.mifos.core.api.util.UserContextHolder;
-import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.domain.CustomerDocument;
 import io.mifos.customer.service.internal.repository.CustomerEntity;
 import io.mifos.customer.service.internal.repository.DocumentEntity;
 import io.mifos.customer.service.internal.repository.DocumentPageEntity;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import org.apache.fineract.cn.api.util.UserContextHolder;
+import org.apache.fineract.cn.lang.DateConverter;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author Myrle Krantz

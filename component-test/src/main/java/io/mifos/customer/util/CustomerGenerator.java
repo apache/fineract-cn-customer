@@ -18,13 +18,12 @@
  */
 package io.mifos.customer.util;
 
-import io.mifos.core.lang.DateOfBirth;
 import io.mifos.customer.api.v1.domain.Customer;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Arrays;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.fineract.cn.lang.DateOfBirth;
 
 public final class CustomerGenerator {
 

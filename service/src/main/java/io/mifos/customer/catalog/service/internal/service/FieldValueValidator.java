@@ -18,8 +18,6 @@
  */
 package io.mifos.customer.catalog.service.internal.service;
 
-import io.mifos.core.lang.DateConverter;
-import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.catalog.api.v1.domain.Field;
 import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.service.internal.repository.CatalogEntity;
@@ -28,15 +26,16 @@ import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
 import io.mifos.customer.catalog.service.internal.repository.OptionEntity;
 import io.mifos.customer.service.ServiceConstants;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.apache.fineract.cn.lang.DateConverter;
+import org.apache.fineract.cn.lang.ServiceException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Component
 public class FieldValueValidator {

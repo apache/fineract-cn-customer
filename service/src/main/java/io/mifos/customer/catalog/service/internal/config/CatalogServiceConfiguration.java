@@ -18,7 +18,7 @@
  */
 package io.mifos.customer.catalog.service.internal.config;
 
-import io.mifos.core.mariadb.config.EnableMariaDB;
+import org.apache.fineract.cn.mariadb.config.EnableMariaDB;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;

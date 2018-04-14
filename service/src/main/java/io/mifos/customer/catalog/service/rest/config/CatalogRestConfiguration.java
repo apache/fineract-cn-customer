@@ -18,14 +18,14 @@
  */
 package io.mifos.customer.catalog.service.rest.config;
 
-import io.mifos.anubis.config.EnableAnubis;
-import io.mifos.core.async.config.EnableAsync;
-import io.mifos.core.cassandra.config.EnableCassandra;
-import io.mifos.core.command.config.EnableCommandProcessing;
-import io.mifos.core.lang.config.EnableApplicationName;
-import io.mifos.core.lang.config.EnableServiceException;
-import io.mifos.core.lang.config.EnableTenantContext;
 import io.mifos.customer.catalog.service.internal.config.CatalogServiceConfiguration;
+import org.apache.fineract.cn.anubis.config.EnableAnubis;
+import org.apache.fineract.cn.async.config.EnableAsync;
+import org.apache.fineract.cn.cassandra.config.EnableCassandra;
+import org.apache.fineract.cn.command.config.EnableCommandProcessing;
+import org.apache.fineract.cn.lang.config.EnableApplicationName;
+import org.apache.fineract.cn.lang.config.EnableServiceException;
+import org.apache.fineract.cn.lang.config.EnableTenantContext;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;

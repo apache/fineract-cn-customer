@@ -18,13 +18,12 @@
  */
 package io.mifos.customer;
 
-import io.mifos.core.lang.DateConverter;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CustomerAlreadyExistsException;
 import io.mifos.customer.api.v1.client.CustomerNotFoundException;
 import io.mifos.customer.api.v1.client.CustomerValidationException;
-import io.mifos.customer.api.v1.client.PortraitNotFoundException;
 import io.mifos.customer.api.v1.client.DocumentValidationException;
+import io.mifos.customer.api.v1.client.PortraitNotFoundException;
 import io.mifos.customer.api.v1.domain.Address;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.ContactDetail;
@@ -35,17 +34,17 @@ import io.mifos.customer.util.AddressGenerator;
 import io.mifos.customer.util.CommandGenerator;
 import io.mifos.customer.util.ContactDetailGenerator;
 import io.mifos.customer.util.CustomerGenerator;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.fineract.cn.lang.DateConverter;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class TestCustomer extends AbstractCustomerTest {
 
@@ -221,7 +220,8 @@ public class TestCustomer extends AbstractCustomerTest {
   @Test
   public void shouldUnlockClient() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
-    final String applicationDate = DateConverter.toIsoString(LocalDate.now(Clock.systemUTC())).substring(0, 10);
+    final String applicationDate = DateConverter
+        .toIsoString(LocalDate.now(Clock.systemUTC())).substring(0, 10);
     customer.setApplicationDate(applicationDate);
     this.customerManager.createCustomer(customer);
 

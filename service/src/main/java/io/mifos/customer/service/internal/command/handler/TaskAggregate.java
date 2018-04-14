@@ -18,11 +18,6 @@
  */
 package io.mifos.customer.service.internal.command.handler;
 
-import io.mifos.core.api.util.UserContextHolder;
-import io.mifos.core.command.annotation.Aggregate;
-import io.mifos.core.command.annotation.CommandHandler;
-import io.mifos.core.command.annotation.EventEmitter;
-import io.mifos.core.lang.ServiceException;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.domain.Command;
 import io.mifos.customer.api.v1.domain.TaskDefinition;
@@ -38,15 +33,19 @@ import io.mifos.customer.service.internal.repository.TaskDefinitionEntity;
 import io.mifos.customer.service.internal.repository.TaskDefinitionRepository;
 import io.mifos.customer.service.internal.repository.TaskInstanceEntity;
 import io.mifos.customer.service.internal.repository.TaskInstanceRepository;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.StringUtils;
+import org.apache.fineract.cn.api.util.UserContextHolder;
+import org.apache.fineract.cn.command.annotation.Aggregate;
+import org.apache.fineract.cn.command.annotation.CommandHandler;
+import org.apache.fineract.cn.command.annotation.EventEmitter;
+import org.apache.fineract.cn.lang.ServiceException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @Aggregate

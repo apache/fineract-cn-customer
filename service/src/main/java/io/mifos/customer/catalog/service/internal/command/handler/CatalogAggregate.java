@@ -18,9 +18,6 @@
  */
 package io.mifos.customer.catalog.service.internal.command.handler;
 
-import io.mifos.core.command.annotation.Aggregate;
-import io.mifos.core.command.annotation.CommandHandler;
-import io.mifos.core.command.annotation.EventEmitter;
 import io.mifos.customer.catalog.api.v1.CatalogEventConstants;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.api.v1.domain.Field;
@@ -37,13 +34,15 @@ import io.mifos.customer.catalog.service.internal.repository.FieldEntity;
 import io.mifos.customer.catalog.service.internal.repository.FieldRepository;
 import io.mifos.customer.catalog.service.internal.repository.OptionRepository;
 import io.mifos.customer.service.ServiceConstants;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.fineract.cn.command.annotation.Aggregate;
+import org.apache.fineract.cn.command.annotation.CommandHandler;
+import org.apache.fineract.cn.command.annotation.EventEmitter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Aggregate
 public class CatalogAggregate {

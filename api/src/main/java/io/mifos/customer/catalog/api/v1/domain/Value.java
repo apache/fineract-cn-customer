@@ -18,7 +18,7 @@
  */
 package io.mifos.customer.catalog.api.v1.domain;
 
-import io.mifos.core.lang.validation.constraints.ValidIdentifier;
+import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class Value {

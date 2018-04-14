@@ -19,21 +19,12 @@
 package io.mifos.customer.catalog;
 
 import com.google.common.collect.Lists;
-import io.mifos.anubis.test.v1.TenantApplicationSecurityEnvironmentTestRule;
-import io.mifos.core.api.context.AutoUserContext;
-import io.mifos.core.test.env.TestEnvironment;
-import io.mifos.core.test.fixture.TenantDataStoreContextTestRule;
-import io.mifos.core.test.fixture.cassandra.CassandraInitializer;
-import io.mifos.core.test.fixture.mariadb.MariaDBInitializer;
-import io.mifos.core.test.listener.EnableEventRecording;
-import io.mifos.core.test.listener.EventRecorder;
 import io.mifos.customer.api.v1.CustomerEventConstants;
 import io.mifos.customer.api.v1.client.CustomerManager;
 import io.mifos.customer.api.v1.domain.Customer;
 import io.mifos.customer.catalog.api.v1.CatalogEventConstants;
 import io.mifos.customer.catalog.api.v1.client.CatalogAlreadyInUseException;
 import io.mifos.customer.catalog.api.v1.client.CatalogManager;
-import io.mifos.customer.catalog.api.v1.client.CatalogValidationException;
 import io.mifos.customer.catalog.api.v1.client.FieldAlreadyInUseException;
 import io.mifos.customer.catalog.api.v1.domain.Catalog;
 import io.mifos.customer.catalog.api.v1.domain.Field;
@@ -42,6 +33,18 @@ import io.mifos.customer.catalog.api.v1.domain.Value;
 import io.mifos.customer.catalog.util.CatalogGenerator;
 import io.mifos.customer.service.rest.config.CustomerRestConfiguration;
 import io.mifos.customer.util.CustomerGenerator;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.fineract.cn.anubis.test.v1.TenantApplicationSecurityEnvironmentTestRule;
+import org.apache.fineract.cn.api.context.AutoUserContext;
+import org.apache.fineract.cn.test.env.TestEnvironment;
+import org.apache.fineract.cn.test.fixture.TenantDataStoreContextTestRule;
+import org.apache.fineract.cn.test.fixture.cassandra.CassandraInitializer;
+import org.apache.fineract.cn.test.fixture.mariadb.MariaDBInitializer;
+import org.apache.fineract.cn.test.listener.EnableEventRecording;
+import org.apache.fineract.cn.test.listener.EventRecorder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -59,11 +62,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
