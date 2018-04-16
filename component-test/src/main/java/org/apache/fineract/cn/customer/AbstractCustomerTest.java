@@ -21,7 +21,7 @@ package org.apache.fineract.cn.customer;
 import org.apache.fineract.cn.customer.api.v1.CustomerEventConstants;
 import org.apache.fineract.cn.customer.api.v1.client.CustomerDocumentsManager;
 import org.apache.fineract.cn.customer.api.v1.client.CustomerManager;
-import org.apache.fineract.cn.customer.service.rest.config.CustomerRestConfiguration;
+import org.apache.fineract.cn.customer.rest.config.CustomerRestConfiguration;
 import org.apache.fineract.cn.anubis.test.v1.TenantApplicationSecurityEnvironmentTestRule;
 import org.apache.fineract.cn.api.context.AutoUserContext;
 import org.apache.fineract.cn.test.fixture.TenantDataStoreContextTestRule;

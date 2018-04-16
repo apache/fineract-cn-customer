@@ -31,7 +31,7 @@ import org.apache.fineract.cn.customer.catalog.api.v1.domain.Field;
 import org.apache.fineract.cn.customer.catalog.api.v1.domain.Option;
 import org.apache.fineract.cn.customer.catalog.api.v1.domain.Value;
 import org.apache.fineract.cn.customer.catalog.util.CatalogGenerator;
-import org.apache.fineract.cn.customer.service.rest.config.CustomerRestConfiguration;
+import org.apache.fineract.cn.customer.rest.config.CustomerRestConfiguration;
 import org.apache.fineract.cn.customer.util.CustomerGenerator;
 import java.util.Arrays;
 import java.util.List;
