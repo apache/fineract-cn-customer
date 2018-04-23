@@ -1,0 +1,8 @@
+[source,http,options="nowrap"]
+----
+POST /customer/v1/customers/g3ADQraM/identifications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Host: localhost:8080
+
+----

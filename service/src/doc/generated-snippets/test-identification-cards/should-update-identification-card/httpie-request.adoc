@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ http PUT 'http://localhost:8080/customer/v1/customers/kSLcV44v/identifications/3P4PMz3zI9aD9pnWIPIbf7nbR0AhqwaO' 'Accept:application/json' 'Content-Type:application/json'
+----

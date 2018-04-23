@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ echo 'TCDV60bZ' | http PUT 'http://localhost:8080/customer/v1/customers/TCDV60bZ/address' 'Accept:application/json' 'Content-Type:application/json'
+----

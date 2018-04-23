@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ http DELETE 'http://localhost:8080/customer/v1/customers/XRGYXK2C/portrait' 'Content-Type:image/png'
+----

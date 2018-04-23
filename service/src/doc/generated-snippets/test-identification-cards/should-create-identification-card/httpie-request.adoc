@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ http POST 'http://localhost:8080/customer/v1/customers/g3ADQraM/identifications' 'Content-Type:application/json' 'Accept:application/json'
+----

@@ -1,0 +1,10 @@
+[source,http,options="nowrap"]
+----
+POST /customer/v1/customers/y6l1FhV8/portrait HTTP/1.1
+Accept: multipart/form-data
+Content-Type: image/png
+Host: localhost:8080
+Content-Length: 17
+
+Real Devs Deliver
+----

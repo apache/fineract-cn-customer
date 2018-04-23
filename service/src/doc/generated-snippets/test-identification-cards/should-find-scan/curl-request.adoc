@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl 'http://localhost:8080/customer/v1/customers/QfPGPVsL/identifications/U1SVL17rBX96AMcyAtPuU4rC9H0dJjaK/scans/sameIdentifier' -i -H 'Accept: */*'
+----
