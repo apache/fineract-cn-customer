@@ -1,0 +1,7 @@
+[source,http,options="nowrap"]
+----
+GET /customer/v1/customers HTTP/1.1
+Accept: */*
+Host: localhost:8080
+
+----

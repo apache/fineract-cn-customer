@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ echo 'Real Devs Deliver' | http POST 'http://localhost:8080/customer/v1/customers/y6l1FhV8/portrait' 'Accept:multipart/form-data' 'Content-Type:image/png'
+----

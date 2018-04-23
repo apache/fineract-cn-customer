@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl 'http://localhost:8080/customer/v1/customers/KyKSVsOr/identifications/zmKtw0Aif69NYeN4GtUZcDIEf6Bcu63M/scans' -i -H 'Accept: */*'
+----

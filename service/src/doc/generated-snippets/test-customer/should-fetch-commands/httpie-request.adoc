@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ http GET 'http://localhost:8080/customer/v1/customers/Ye6mDs0v/commands' 'Accept:*/*'
+----

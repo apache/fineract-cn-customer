@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl 'http://localhost:8080/customer/v1/customers/3WYfvF6X/contact' -i -X PUT -H 'Accept: application/json' -H 'Content-Type: application/json' -d '3WYfvF6X'
+----

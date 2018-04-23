@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ echo 'Izcp1G3s' | http PUT 'http://localhost:8080/customer/v1/customers/Izcp1G3s/commands' 'Content-Type:application/json'
+----
