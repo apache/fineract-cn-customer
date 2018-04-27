@@ -1,7 +1,0 @@
-[source,http,options="nowrap"]
-----
-GET /customer/v1/customers/f4A6My9u/identifications HTTP/1.1
-Accept: */*
-Host: localhost:8080
-
-----

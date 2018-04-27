@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'http://localhost:8080/customer/v1/customers' -i -X POST -H 'Content-Type: application/json' -d 'HGLg6dMM'
-----

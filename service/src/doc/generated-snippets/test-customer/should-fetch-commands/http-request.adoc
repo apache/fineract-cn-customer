@@ -1,7 +1,0 @@
-[source,http,options="nowrap"]
-----
-GET /customer/v1/customers/Ye6mDs0v/commands HTTP/1.1
-Accept: */*
-Host: localhost:8080
-
-----

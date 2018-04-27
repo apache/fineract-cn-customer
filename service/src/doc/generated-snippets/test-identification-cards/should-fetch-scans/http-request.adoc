@@ -1,7 +1,0 @@
-[source,http,options="nowrap"]
-----
-GET /customer/v1/customers/KyKSVsOr/identifications/zmKtw0Aif69NYeN4GtUZcDIEf6Bcu63M/scans HTTP/1.1
-Accept: */*
-Host: localhost:8080
-
-----

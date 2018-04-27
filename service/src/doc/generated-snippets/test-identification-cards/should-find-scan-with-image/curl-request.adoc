@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'http://localhost:8080/customer/v1/customers/Y8uayjNj/identifications/5VtZnu60KFcXwOqmrmU83RimT4nP3NA9/scans/2GIxiGHmtwbIz1pGQu0Ft5nArC4HCIFt/image' -i -H 'Accept: */*'
-----
