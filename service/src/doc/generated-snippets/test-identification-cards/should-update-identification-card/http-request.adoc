@@ -1,8 +1,0 @@
-[source,http,options="nowrap"]
-----
-PUT /customer/v1/customers/kSLcV44v/identifications/3P4PMz3zI9aD9pnWIPIbf7nbR0AhqwaO HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-Host: localhost:8080
-
-----

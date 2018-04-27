@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'http://localhost:8080/customer/v1/customers/y6l1FhV8/portrait' -i -X POST -H 'Accept: multipart/form-data' -H 'Content-Type: image/png' -d 'Real Devs Deliver'
-----

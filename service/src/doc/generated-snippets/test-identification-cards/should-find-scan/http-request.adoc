@@ -1,7 +1,0 @@
-[source,http,options="nowrap"]
-----
-GET /customer/v1/customers/QfPGPVsL/identifications/U1SVL17rBX96AMcyAtPuU4rC9H0dJjaK/scans/sameIdentifier HTTP/1.1
-Accept: */*
-Host: localhost:8080
-
-----

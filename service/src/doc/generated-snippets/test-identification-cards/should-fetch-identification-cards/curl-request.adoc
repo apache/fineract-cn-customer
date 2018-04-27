@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'http://localhost:8080/customer/v1/customers/f4A6My9u/identifications' -i -H 'Accept: */*'
-----

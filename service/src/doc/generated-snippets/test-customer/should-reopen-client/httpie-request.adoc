@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ echo 'R0xYQ8jJ' | http PUT 'http://localhost:8080/customer/v1/customers/R0xYQ8jJ/commands' 'Content-Type:application/json'
-----
