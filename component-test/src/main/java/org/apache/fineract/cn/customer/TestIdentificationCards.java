@@ -31,14 +31,51 @@ import org.apache.fineract.cn.customer.util.IdentificationCardGenerator;
 import org.apache.fineract.cn.customer.util.ScanGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 public class TestIdentificationCards extends AbstractCustomerTest {
+
+  @Rule
+  public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/doc/generated-snippets/test-identification-cards");
+
+  @Autowired
+  private WebApplicationContext context;
+
+  private MockMvc mockMvc;
+
+  final String path = "/customer/v1";
+
+  @Before
+  public void setUp(){
+
+    this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
+            .apply(documentationConfiguration(this.restDocumentation))
+            .alwaysDo(document("{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())))
+            .build();
+  }
 
   @Test
   public void shouldFetchIdentificationCards() throws Exception {
@@ -60,6 +97,13 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     final List<IdentificationCard> result = this.customerManager.fetchIdentificationCards(customerIdentifier);
 
     Assert.assertTrue(result.size() == 3);
+
+    try
+    {
+      this.mockMvc.perform(get(path + "/customers/" + customerIdentifier + "/identifications")
+              .accept(MediaType.ALL))
+              .andExpect(status().isNotFound());
+    } catch (Exception exception){ exception.printStackTrace(); }
   }
 
   @Test
@@ -73,6 +117,11 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     Assert.assertNotNull(identificationCard);
 
     Assert.assertEquals(identificationCard.getCreatedBy(), TEST_USER);
+
+    this.mockMvc.perform(post(path + "/customers/" + customerIdentifier + "/identifications")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -97,6 +146,11 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     Assert.assertEquals(updatedIdentificationCard.getIssuer(), changedIdentificationCard.getIssuer());
     Assert.assertEquals(updatedIdentificationCard.getNumber(), changedIdentificationCard.getNumber());
     Assert.assertEquals(TEST_USER, changedIdentificationCard.getLastModifiedBy());
+
+    this.mockMvc.perform(put(path + "/customers/" + customerIdentifier
+            + "/identifications/" + identificationCardNumber ).accept(MediaType.APPLICATION_JSON_VALUE)
+            .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().is4xxClientError());
   }
 
   @Test(expected = IdentificationCardNotFoundException.class)
@@ -110,6 +164,12 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     this.eventRecorder.wait(CustomerEventConstants.DELETE_IDENTIFICATION_CARD, identificationCardNumber);
 
     this.customerManager.findIdentificationCard(customerIdentifier, identificationCardNumber);
+
+    this.mockMvc.perform(delete(path + "/customers/" + customerIdentifier
+            + "/identifications/" + identificationCardNumber)
+            .contentType(MediaType.IMAGE_PNG_VALUE)
+            .accept(MediaType.ALL_VALUE))
+            .andExpect(status().isAccepted());
   }
 
   @Test(expected = IdentificationCardNotFoundException.class)
@@ -118,13 +178,19 @@ public class TestIdentificationCards extends AbstractCustomerTest {
 
     final String identificationCardNumber = this.createIdentificationCard(customerIdentifier);
 
-    this.createScan(customerIdentifier, identificationCardNumber);
+    IdentificationCardScan scanIdentifier = this.createScan(customerIdentifier, identificationCardNumber);
 
     this.customerManager.deleteIdentificationCard(customerIdentifier, identificationCardNumber);
 
     this.eventRecorder.wait(CustomerEventConstants.DELETE_IDENTIFICATION_CARD, identificationCardNumber);
 
     this.customerManager.findIdentificationCard(customerIdentifier, identificationCardNumber);
+
+    this.mockMvc.perform(delete(path + "/customers/" + customerIdentifier + "/identifications/"
+            + identificationCardNumber + "/scans/" + scanIdentifier)
+            .accept(MediaType.ALL_VALUE)
+            .contentType(MediaType.IMAGE_PNG_VALUE))
+            .andExpect(status().isOk());
   }
 
   @Test
@@ -140,6 +206,10 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     final List<IdentificationCardScan> result = this.customerManager.fetchIdentificationCardScans(customerIdentifier, identificationCardNumber);
 
     Assert.assertTrue(result.size() == 3);
+
+    this.mockMvc.perform(get(path + "/customers/" + customerIdentifier
+            + "/identifications/" + identificationCardNumber + "/scans").accept(MediaType.ALL_VALUE))
+            .andExpect(status().isNotFound());
   }
 
   @Test
@@ -157,6 +227,11 @@ public class TestIdentificationCards extends AbstractCustomerTest {
 
     Assert.assertEquals(scan.getIdentifier(), createdScan.getIdentifier());
     Assert.assertEquals(scan.getDescription(), createdScan.getDescription());
+
+    this.mockMvc.perform(get(path + "/customers/" + customerIdentifier
+            + "/identifications/" + identificationCardNumberOne + "/scans/" + scan.getIdentifier())
+            .accept(MediaType.ALL_VALUE))
+            .andExpect(status().isNotFound());
   }
 
   @Test
@@ -178,6 +253,11 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     final byte[] persistedImageInBytes = this.customerManager.fetchIdentificationCardScanImage(customerIdentifier, identificationCardNumber, scan.getIdentifier());
 
     Assert.assertArrayEquals(imageInBytes, persistedImageInBytes);
+
+    this.mockMvc.perform(get(path + "/customers/" + customerIdentifier + "/identifications/"
+            + identificationCardNumber + "/scans/" + scan.getIdentifier() + "/image")
+            .accept(MediaType.ALL_VALUE))
+            .andExpect(status().isNotFound());
   }
 
   @Test(expected = ScanAlreadyExistsException.class)
@@ -206,6 +286,12 @@ public class TestIdentificationCards extends AbstractCustomerTest {
     this.eventRecorder.wait(CustomerEventConstants.DELETE_IDENTIFICATION_CARD_SCAN, new ScanEvent(identificationCardNumber, createdScan.getIdentifier()));
 
     this.customerManager.findIdentificationCardScan(customerIdentifier, identificationCardNumber, createdScan.getIdentifier());
+
+    this.mockMvc.perform(delete(path + "/customers/" + customerIdentifier + "/identifications/"
+            + identificationCardNumber + "/scans/" + createdScan.getIdentifier())
+            .accept(MediaType.ALL_VALUE)
+            .contentType(MediaType.IMAGE_PNG_VALUE))
+            .andExpect(status().isOk());
   }
 
   private String createCustomer() throws Exception {
