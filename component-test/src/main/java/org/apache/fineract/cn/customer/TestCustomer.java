@@ -42,48 +42,11 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.fineract.cn.lang.DateConverter;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class TestCustomer extends AbstractCustomerTest {
-
-  @Rule
-  public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/doc/generated-snippets/test-customer");
-
-  @Autowired
-  private WebApplicationContext context;
-
-  private MockMvc mockMvc;
-
-  final String path = "/customer/v1";
-
-  @Before
-  public void setUp(){
-
-    this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-            .apply(documentationConfiguration(this.restDocumentation))
-            .alwaysDo(document("{method-name}", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint())))
-            .build();
-  }
 
   @Test
   public void shouldCreateCustomer() throws Exception {
@@ -98,10 +61,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final Customer createdCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(createdCustomer);
 
-    this.mockMvc.perform(post(path + "/customers")
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isNotFound());
   }
 
   @Test
@@ -147,9 +106,6 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertEquals(2, foundCustomer.getContactDetails().size());
     Assert.assertEquals(customer.getMember(), foundCustomer.getMember());
 
-    this.mockMvc.perform(get(path + "/customers/" + customer.getIdentifier())
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -184,14 +140,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final CustomerPage customerPage = this.customerManager.fetchCustomers(null, null, 0, 20, null, null);
     Assert.assertTrue(customerPage.getTotalElements() >= 3);
-
-    try
-    {
-      this.mockMvc.perform(get(path + "/customers").accept(MediaType.ALL))
-              .andExpect(status().is4xxClientError());
-    } catch (Exception exception){ exception.printStackTrace(); }
   }
-
 
   @Test
   public void shouldFetchCustomersByTerm() throws Exception {
@@ -219,11 +168,6 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer updatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(customer.getSurname(), updatedCustomer.getSurname());
-
-    this.mockMvc.perform(put(path + "/customers/" + customer.getIdentifier())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(updatedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -251,10 +195,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final Customer activatedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), activatedCustomer.getCurrentState());
     Assert.assertNotNull(activatedCustomer.getApplicationDate());
-
-    this.mockMvc.perform(put(path + "/customers/" + activatedCustomer.getIdentifier() + "/commands").contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(activatedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -276,10 +216,6 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer lockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.LOCKED.name(), lockedCustomer.getCurrentState());
-
-    this.mockMvc.perform(put(path + "/customers/" + lockedCustomer.getIdentifier() + "/commands").contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(lockedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -310,10 +246,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final Customer unlockedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), unlockedCustomer.getCurrentState());
     Assert.assertEquals(applicationDate, unlockedCustomer.getApplicationDate());
-
-    this.mockMvc.perform(put(path + "/customers/" + unlockedCustomer.getIdentifier() + "/commands").contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(unlockedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -335,10 +267,6 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer closedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.CLOSED.name(), closedCustomer.getCurrentState());
-
-    this.mockMvc.perform(put(path + "/customers/" + closedCustomer.getIdentifier() + "/commands").contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(closedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -366,9 +294,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final Customer reopenedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), reopenedCustomer.getCurrentState());
 
-    this.mockMvc.perform(put(path + "/customers/" + reopenedCustomer.getIdentifier() + "/commands").contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(reopenedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -384,12 +309,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final List<Command> commands = this.customerManager.fetchCustomerCommands(customer.getIdentifier());
     Assert.assertTrue(commands.size() == 1);
 
-    try
-    {
-      this.mockMvc.perform(get(path + "/customers/" + customer.getIdentifier() + "/commands")
-              .accept(MediaType.ALL))
-              .andExpect(status().is4xxClientError());
-    } catch (Exception exception){ exception.printStackTrace(); }
   }
 
   @Test
@@ -413,11 +332,6 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertEquals(address.getRegion(), changedAddress.getRegion());
     Assert.assertEquals(address.getStreet(), changedAddress.getStreet());
     Assert.assertEquals(address.getCountry(), changedAddress.getCountry());
-
-    this.mockMvc.perform(put(path + "/customers/" + customer.getIdentifier() + "/address").accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(changedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -442,10 +356,6 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertEquals(contactDetail.getGroup(), changedContactDetail.getGroup());
     Assert.assertEquals(contactDetail.getPreferenceLevel(), changedContactDetail.getPreferenceLevel());
 
-    this.mockMvc.perform(put(path + "/customers/" + customer.getIdentifier() + "/contact").accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(changedCustomer.getIdentifier()))
-            .andExpect(status().is4xxClientError());
   }
 
   @Test
@@ -466,11 +376,6 @@ public class TestCustomer extends AbstractCustomerTest {
     byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
 
     Assert.assertArrayEquals(file.getBytes(), portrait);
-
-    this.mockMvc.perform(post(path + "/customers/" + customer.getIdentifier() + "/portrait").accept(MediaType.MULTIPART_FORM_DATA_VALUE)
-            .contentType(MediaType.IMAGE_PNG_VALUE)
-            .content(portrait))
-            .andExpect(status().isNotFound());
   }
 
   @Test
@@ -499,11 +404,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final byte[] portrait = this.customerManager.getPortrait(customer.getIdentifier());
 
     Assert.assertArrayEquals(secondFile.getBytes(), portrait);
-
-    this.mockMvc.perform(post(path + "/customers/" + customer.getIdentifier() + "/portrait").accept(MediaType.MULTIPART_FORM_DATA_VALUE)
-            .contentType(MediaType.IMAGE_PNG_VALUE)
-            .content(portrait))
-            .andExpect(status().isNotFound());
   }
 
   @Test(expected = DocumentValidationException.class)
@@ -536,12 +436,6 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.deletePortrait(customer.getIdentifier());
 
     Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier()));
-
-    this.customerManager.getPortrait(customer.getIdentifier());
-
-    this.mockMvc.perform(delete(path + "/customers/" + customer.getIdentifier() + "/portrait")
-            .contentType(MediaType.IMAGE_PNG_VALUE))
-            .andExpect(status().isOk());
   }
 
   @Test
