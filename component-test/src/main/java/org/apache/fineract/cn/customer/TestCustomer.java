@@ -60,6 +60,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer createdCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertNotNull(createdCustomer);
+
   }
 
   @Test
@@ -104,6 +105,7 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertNotNull(foundCustomer.getContactDetails());
     Assert.assertEquals(2, foundCustomer.getContactDetails().size());
     Assert.assertEquals(customer.getMember(), foundCustomer.getMember());
+
   }
 
   @Test
@@ -139,7 +141,6 @@ public class TestCustomer extends AbstractCustomerTest {
     final CustomerPage customerPage = this.customerManager.fetchCustomers(null, null, 0, 20, null, null);
     Assert.assertTrue(customerPage.getTotalElements() >= 3);
   }
-
 
   @Test
   public void shouldFetchCustomersByTerm() throws Exception {
@@ -292,6 +293,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final Customer reopenedCustomer = this.customerManager.findCustomer(customer.getIdentifier());
     Assert.assertEquals(Customer.State.ACTIVE.name(), reopenedCustomer.getCurrentState());
+
   }
 
   @Test
@@ -306,6 +308,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
     final List<Command> commands = this.customerManager.fetchCustomerCommands(customer.getIdentifier());
     Assert.assertTrue(commands.size() == 1);
+
   }
 
   @Test
@@ -352,6 +355,7 @@ public class TestCustomer extends AbstractCustomerTest {
     Assert.assertEquals(contactDetail.getValidated(), changedContactDetail.getValidated());
     Assert.assertEquals(contactDetail.getGroup(), changedContactDetail.getGroup());
     Assert.assertEquals(contactDetail.getPreferenceLevel(), changedContactDetail.getPreferenceLevel());
+
   }
 
   @Test
@@ -432,8 +436,6 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.deletePortrait(customer.getIdentifier());
 
     Assert.assertTrue(this.eventRecorder.wait(CustomerEventConstants.DELETE_PORTRAIT, customer.getIdentifier()));
-
-    this.customerManager.getPortrait(customer.getIdentifier());
   }
 
   @Test
