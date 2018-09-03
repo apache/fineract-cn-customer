@@ -419,7 +419,7 @@ public class TestCustomer extends AbstractCustomerTest {
     this.customerManager.postPortrait(customer.getIdentifier(), firstFile);
   }
 
-  @Test(expected = PortraitNotFoundException.class)
+  @Test
   public void shouldDeletePortrait() throws Exception {
     final Customer customer = CustomerGenerator.createRandomCustomer();
 
