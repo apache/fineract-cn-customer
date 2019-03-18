@@ -23,7 +23,6 @@ import org.apache.fineract.cn.customer.api.v1.client.CustomerAlreadyExistsExcept
 import org.apache.fineract.cn.customer.api.v1.client.CustomerNotFoundException;
 import org.apache.fineract.cn.customer.api.v1.client.CustomerValidationException;
 import org.apache.fineract.cn.customer.api.v1.client.DocumentValidationException;
-import org.apache.fineract.cn.customer.api.v1.client.PortraitNotFoundException;
 import org.apache.fineract.cn.customer.api.v1.domain.Address;
 import org.apache.fineract.cn.customer.api.v1.domain.Command;
 import org.apache.fineract.cn.customer.api.v1.domain.ContactDetail;
@@ -120,7 +119,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
   @Test
   public void shouldFindNonExistentCustomerIsNotInGoodStanding() throws Exception {
-    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(testEnvironment.generateUniqueIdentifer("don")));
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(testEnvironment.generateUniqueIdentifier("don")));
   }
 
   @Test
