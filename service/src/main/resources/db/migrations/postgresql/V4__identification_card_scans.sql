@@ -18,7 +18,7 @@
 --
 
 CREATE TABLE maat_identification_card_scans (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   description VARCHAR(4096) NOT NULL,
   identification_card_id BIGINT NOT NULL,

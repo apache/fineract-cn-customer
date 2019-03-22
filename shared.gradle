@@ -61,7 +61,8 @@ ext['spring-data-releasetrain.version'] = 'Gosling-SR2A'
 dependencies {
     compile(
             [group: 'com.google.code.findbugs', name: 'jsr305'],
-            [group: 'org.apache.fineract.cn', name: 'postgresql', version: versions.frameworkpostgresql]
+            [group: 'org.apache.fineract.cn', name: 'postgresql', version: versions.frameworkpostgresql],
+            [group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4']
     )
 
     testCompile(

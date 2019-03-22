@@ -21,4 +21,4 @@ ALTER TABLE maat_customers ADD is_member BOOLEAN NULL;
 
 UPDATE maat_customers set is_member = TRUE;
 
-ALTER TABLE maat_customers MODIFY is_member BOOLEAN NOT NULL;
+ALTER TABLE maat_customers ALTER COLUMN is_member SET NOT NULL;

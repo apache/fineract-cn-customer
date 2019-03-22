@@ -18,7 +18,7 @@
 --
 
 CREATE TABLE maat_payroll_distributions (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   main_account_number VARCHAR(34) NOT NULL,
   created_by VARCHAR(32) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE maat_payroll_distributions (
 );
 
 CREATE TABLE maat_payroll_allocations (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   payroll_distribution_id BIGINT NOT NULL,
   account_number VARCHAR(34) NOT NULL,
   amount NUMERIC(15,5) NOT NULL,

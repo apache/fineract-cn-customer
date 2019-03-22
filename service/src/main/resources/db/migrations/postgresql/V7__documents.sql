@@ -18,7 +18,7 @@
 --
 
 CREATE TABLE maat_documents (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   is_completed BOOLEAN NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE maat_documents (
 );
 
 CREATE TABLE maat_document_pages (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   document_id BIGINT NOT NULL,
   page_number INT NOT NULL,
   content_type VARCHAR(256) NOT NULL,

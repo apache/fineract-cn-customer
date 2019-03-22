@@ -18,7 +18,7 @@
 --
 
 CREATE TABLE maat_addresses (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   street VARCHAR(256) NOT NULL,
   city VARCHAR(256) NOT NULL,
   postal_code VARCHAR(32) NULL,
@@ -29,7 +29,7 @@ CREATE TABLE maat_addresses (
 );
 
 CREATE TABLE maat_customers (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   a_type VARCHAR(32) NOT NULL,
   given_name VARCHAR(256) NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE maat_customers (
 );
 
 CREATE TABLE maat_identification_cards (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   a_type VARCHAR(128) NOT NULL,
   customer_id BIGINT NOT NULL,
   a_number VARCHAR(32) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE maat_identification_cards (
 );
 
 CREATE TABLE maat_contact_details (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   a_type VARCHAR(32) NOT NULL,
   a_group VARCHAR(256) NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE maat_contact_details (
 );
 
 CREATE TABLE maat_commands (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   a_type VARCHAR(32) NOT NULL,
   a_comment VARCHAR(32) NULL,
@@ -86,7 +86,7 @@ CREATE TABLE maat_commands (
 );
 
 CREATE TABLE maat_task_definitions (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   a_type VARCHAR(32) NOT NULL,
   a_name VARCHAR(256) NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE maat_task_definitions (
 );
 
 CREATE TABLE maat_task_instances (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   task_definition_id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   a_comment VARCHAR(4096) NULL,
@@ -111,7 +111,7 @@ CREATE TABLE maat_task_instances (
 );
 
 CREATE TABLE nun_catalogs (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   a_name VARCHAR(256) NOT NULL,
   description VARCHAR(4096) NULL,
@@ -124,7 +124,7 @@ CREATE TABLE nun_catalogs (
 );
 
 CREATE TABLE nun_fields (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   catalog_id BIGINT NOT NULL,
   identifier VARCHAR(32) NOT NULL,
   data_type VARCHAR(256) NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE nun_fields (
 );
 
 CREATE TABLE nun_options (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   field_id BIGINT NOT NULL,
   a_label VARCHAR(256) NOT NULL,
   a_value BIGINT NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE nun_options (
 );
 
 CREATE TABLE nun_field_values (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   entity_id BIGINT NOT NULL,
   field_id BIGINT NOT NULL,
   a_value VARCHAR(4096) NOT NULL,

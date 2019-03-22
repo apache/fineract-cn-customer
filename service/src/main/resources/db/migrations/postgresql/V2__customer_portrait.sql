@@ -18,7 +18,7 @@
 --
 
 CREATE TABLE maat_portraits (
-  id BIGINT NOT NULL AUTO_INCREMENT,
+  id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   content_type VARCHAR(256) NOT NULL,
   size BIGINT NOT NULL,
