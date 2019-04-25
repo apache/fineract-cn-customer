@@ -120,7 +120,7 @@ public class TestCustomer extends AbstractCustomerTest {
 
   @Test
   public void shouldFindNonExistentCustomerIsNotInGoodStanding() throws Exception {
-    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(testEnvironment.generateUniqueIdentifer("don")));
+    Assert.assertFalse(this.customerManager.isCustomerInGoodStanding(testEnvironment.generateUniqueIdentifier("don")));
   }
 
   @Test
