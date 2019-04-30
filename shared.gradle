@@ -43,6 +43,7 @@ tasks.withType(JavaCompile) {
 repositories {
     jcenter()
     mavenLocal()
+    maven { url 'https://mifos.jfrog.io/mifos/libs-snapshot/' }
 }
 
 dependencyManagement {
@@ -73,6 +74,22 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+artifactory {
+    contextUrl = System.getenv("ARTIFACTORY_URL")
+    publish {
+        repository {
+            repoKey = project.findProperty('artifactoryRepoKey')
+            username = System.getenv("ARTIFACTORY_USER")
+            password = System.getenv("ARTIFACTORY_PASSWORD")
+        }
+
+        defaults {
+            publications ('api', 'componentTest', 'service', 'bootService')
+        }
+    }
+}
+artifactoryPublish.dependsOn('clean','publishToMavenLocal')
+
 license {
     header rootProject.file('../HEADER')
     strictCheck true
@@ -94,6 +111,7 @@ rat {
             "**/build/**",
             "gradlew",
             "gradlew.bat",
-            "README.md"
+            "README.md",
+            "**/.dockerignore/**"
     ]
 }
