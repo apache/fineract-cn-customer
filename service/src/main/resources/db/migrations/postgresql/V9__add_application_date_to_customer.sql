@@ -19,4 +19,4 @@
 
 ALTER TABLE maat_customers ADD application_date DATE NULL;
 
-UPDATE maat_customers set application_date = CURDATE() WHERE current_state <> 'PENDING';
+UPDATE maat_customers set application_date = CURRENT_DATE WHERE current_state <> 'PENDING';

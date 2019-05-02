@@ -17,26 +17,12 @@
 -- under the License.
 --
 
-CREATE TABLE maat_payroll_distributions (
-  id BIGINT NOT NULL,
-  customer_id BIGINT NOT NULL,
-  main_account_number VARCHAR(34) NOT NULL,
-  created_by VARCHAR(32) NOT NULL,
-  created_on TIMESTAMP(3) NOT NULL,
-  last_modified_by VARCHAR(32) NULL,
-  last_modified_on TIMESTAMP(3) NULL,
-  CONSTRAINT maat_payroll_distributions_pk PRIMARY KEY (id),
-  CONSTRAINT maat_payroll_dist_main_acct_uq UNIQUE (customer_id, main_account_number),
-  CONSTRAINT maat_payroll_dist_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id)
-);
+CREATE TABLE maat_payroll_distributions ( id BIGINT NOT NULL, customer_id BIGINT NOT NULL, main_account_number VARCHAR(34) NOT NULL, created_by VARCHAR(32) NOT NULL, created_on TIMESTAMP(3) NOT NULL, last_modified_by VARCHAR(32) NULL, last_modified_on TIMESTAMP(3) NULL,
+                                          CONSTRAINT maat_payroll_distributions_pk PRIMARY KEY (id),
+                                          CONSTRAINT maat_payroll_dist_main_acct_uq UNIQUE (customer_id, main_account_number),
+                                          CONSTRAINT maat_payroll_dist_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) );
 
-CREATE TABLE maat_payroll_allocations (
-  id BIGINT NOT NULL,
-  payroll_distribution_id BIGINT NOT NULL,
-  account_number VARCHAR(34) NOT NULL,
-  amount NUMERIC(15,5) NOT NULL,
-  proportional BOOLEAN NOT NULL,
-  CONSTRAINT maat_payroll_allocations_pk PRIMARY KEY (id),
-  CONSTRAINT maat_payroll_alloc_acct_uq UNIQUE (payroll_distribution_id, account_number),
-  CONSTRAINT maat_payroll_alloc_dist_fk FOREIGN KEY (payroll_distribution_id) REFERENCES maat_payroll_distributions (id)
-);
+CREATE TABLE maat_payroll_allocations ( id BIGINT NOT NULL, payroll_distribution_id BIGINT NOT NULL, account_number VARCHAR(34) NOT NULL, amount NUMERIC(15,5) NOT NULL, proportional BOOLEAN NOT NULL,
+                                        CONSTRAINT maat_payroll_allocations_pk PRIMARY KEY (id),
+                                        CONSTRAINT maat_payroll_alloc_acct_uq UNIQUE (payroll_distribution_id, account_number),
+                                        CONSTRAINT maat_payroll_alloc_dist_fk FOREIGN KEY (payroll_distribution_id) REFERENCES maat_payroll_distributions (id) );
