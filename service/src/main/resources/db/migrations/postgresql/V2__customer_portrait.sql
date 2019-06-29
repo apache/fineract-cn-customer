@@ -17,7 +17,7 @@
 -- under the License.
 --
 
-CREATE TABLE maat_portraits ( id BIGINT NOT NULL, customer_id BIGINT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL,
+CREATE TABLE maat_portraits ( id BIGSERIAL, customer_id BIGINT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL,
                               CONSTRAINT maat_portraits_pk PRIMARY KEY (id),
                               CONSTRAINT maat_id_portraits_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT );
 
