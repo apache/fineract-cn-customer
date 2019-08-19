@@ -16,7 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jdk-alpine AS builder
+RUN mkdir builddir
+COPY . builddir
+WORKDIR builddir
+RUN ./gradlew publishToMavenLocal
+
+FROM openjdk:8-jdk-alpine AS runner
 
 ARG customer_port=2024
 
@@ -26,6 +32,6 @@ ENV server.max-http-header-size=16384 \
     system.initialclientid=service-runner
 
 WORKDIR /tmp
-COPY customer-service-boot-0.1.0-BUILD-SNAPSHOT.jar .
+COPY  --from=builder /builddir/service/build/libs/customer-service-boot-0.1.0-BUILD-SNAPSHOT.jar ./customer-service-boot.jar
 
-CMD ["java", "-jar", "customer-service-boot-0.1.0-BUILD-SNAPSHOT.jar"]
+CMD ["java", "-jar", "customer-service-boot.jar"]
