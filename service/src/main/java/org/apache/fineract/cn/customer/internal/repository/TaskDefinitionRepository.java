@@ -28,7 +28,7 @@ import java.util.List;
 @Repository
 public interface TaskDefinitionRepository extends JpaRepository<TaskDefinitionEntity, Long> {
 
-  @Query("SELECT CASE WHEN COUNT(t) > 0 THEN 'true' ELSE 'false' END FROM TaskDefinitionEntity t WHERE t.identifier = :identifier")
+  @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM TaskDefinitionEntity t WHERE t.identifier = :identifier")
   Boolean existsByIdentifier(@Param("identifier") final String identifier);
 
   TaskDefinitionEntity findByIdentifier(final String identifier);

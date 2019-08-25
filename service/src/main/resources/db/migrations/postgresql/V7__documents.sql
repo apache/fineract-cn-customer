@@ -17,12 +17,12 @@
 -- under the License.
 --
 
-CREATE TABLE maat_documents ( id BIGINT NOT NULL, customer_id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, is_completed BOOLEAN NOT NULL, created_on TIMESTAMP(3) NOT NULL, created_by VARCHAR(32) NOT NULL,
+CREATE TABLE maat_documents ( id BIGSERIAL, customer_id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, is_completed BOOLEAN NOT NULL, created_on TIMESTAMP(3) NOT NULL, created_by VARCHAR(32) NOT NULL,
                               CONSTRAINT maat_documents_pk PRIMARY KEY (id),
                               CONSTRAINT maat_documents_uq UNIQUE (customer_id, identifier),
                               CONSTRAINT maat_documents_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT );
 
-CREATE TABLE maat_document_pages ( id BIGINT NOT NULL, document_id BIGINT NOT NULL, page_number INT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL,
+CREATE TABLE maat_document_pages ( id BIGSERIAL, document_id BIGINT NOT NULL, page_number INT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL,
                                    CONSTRAINT maat_document_pages_pk PRIMARY KEY (id),
                                    CONSTRAINT maat_document_pages_uq UNIQUE (document_id, page_number),
                                    CONSTRAINT maat_document_pages_fk FOREIGN KEY (document_id) REFERENCES maat_documents (id) );

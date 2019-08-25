@@ -17,49 +17,49 @@
 -- under the License.
 --
 
-CREATE TABLE maat_addresses ( id BIGINT NOT NULL, street VARCHAR(256) NOT NULL, city VARCHAR(256) NOT NULL, postal_code VARCHAR(32) NULL, region VARCHAR(256) NULL, country_code VARCHAR(2) NOT NULL, country VARCHAR(256) NOT NULL, CONSTRAINT maat_addresses_pk PRIMARY KEY (id) );
+CREATE TABLE maat_addresses ( id BIGSERIAL, street VARCHAR(256) NOT NULL, city VARCHAR(256) NOT NULL, postal_code VARCHAR(32) NULL, region VARCHAR(256) NULL, country_code VARCHAR(2) NOT NULL, country VARCHAR(256) NOT NULL, CONSTRAINT maat_addresses_pk PRIMARY KEY (id) );
 
-CREATE TABLE maat_customers ( id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, a_type VARCHAR(32) NOT NULL, given_name VARCHAR(256) NOT NULL, middle_name VARCHAR(256) NULL, surname VARCHAR(256) NOT NULL, date_of_birth DATE NOT NULL, account_beneficiary VARCHAR(512) NULL, reference_customer VARCHAR(32) NULL, assigned_office VARCHAR(32) NULL, assigned_employee VARCHAR(32) NULL, current_state VARCHAR(32) NOT NULL, address_id BIGINT NOT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL, last_modified_by VARCHAR(32) NULL, last_modified_on TIMESTAMP(3) NULL,
+CREATE TABLE maat_customers ( id BIGSERIAL, identifier VARCHAR(32) NOT NULL, a_type VARCHAR(32) NOT NULL, given_name VARCHAR(256) NOT NULL, middle_name VARCHAR(256) NULL, surname VARCHAR(256) NOT NULL, date_of_birth DATE NOT NULL, account_beneficiary VARCHAR(512) NULL, reference_customer VARCHAR(32) NULL, assigned_office VARCHAR(32) NULL, assigned_employee VARCHAR(32) NULL, current_state VARCHAR(32) NOT NULL, address_id BIGINT NOT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL, last_modified_by VARCHAR(32) NULL, last_modified_on TIMESTAMP(3) NULL,
                               CONSTRAINT maat_customers_pk PRIMARY KEY (id),
                               CONSTRAINT maat_customer_identifier_uq UNIQUE (identifier),
                               CONSTRAINT maat_customers_addresses_fk FOREIGN KEY (address_id) REFERENCES maat_addresses (id) );
 
-CREATE TABLE maat_identification_cards ( id BIGINT NOT NULL, a_type VARCHAR(128) NOT NULL, customer_id BIGINT NOT NULL, a_number VARCHAR(32) NOT NULL, expiration_date DATE NOT NULL, issuer VARCHAR(256) NULL,
+CREATE TABLE maat_identification_cards ( id BIGSERIAL, a_type VARCHAR(128) NOT NULL, customer_id BIGINT NOT NULL, a_number VARCHAR(32) NOT NULL, expiration_date DATE NOT NULL, issuer VARCHAR(256) NULL,
                                          CONSTRAINT maat_identification_cards_pk PRIMARY KEY (id),
                                          CONSTRAINT maat_id_cards_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT ) ;
 
-CREATE TABLE maat_contact_details ( id BIGINT NOT NULL, customer_id BIGINT NOT NULL, a_type VARCHAR(32) NOT NULL, a_group VARCHAR(256) NOT NULL, a_value VARCHAR(32) NOT NULL, preference_level SMALLINT NULL, validated BOOLEAN NULL,
+CREATE TABLE maat_contact_details ( id BIGSERIAL, customer_id BIGINT NOT NULL, a_type VARCHAR(32) NOT NULL, a_group VARCHAR(256) NOT NULL, a_value VARCHAR(32) NOT NULL, preference_level SMALLINT NULL, validated BOOLEAN NULL,
                                     CONSTRAINT maat_contact_details_pk PRIMARY KEY (id),
                                     CONSTRAINT maat_contact_details_cust_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT );
 
-CREATE TABLE maat_commands ( id BIGINT NOT NULL, customer_id BIGINT NOT NULL, a_type VARCHAR(32) NOT NULL, a_comment VARCHAR(32) NULL, created_by VARCHAR(32) NOT NULL, created_on TIMESTAMP(3) NULL,
+CREATE TABLE maat_commands ( id BIGSERIAL, customer_id BIGINT NOT NULL, a_type VARCHAR(32) NOT NULL, a_comment VARCHAR(32) NULL, created_by VARCHAR(32) NOT NULL, created_on TIMESTAMP(3) NULL,
                              CONSTRAINT maat_commands_pk PRIMARY KEY (id),
                              CONSTRAINT maat_commands_customers_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT );
 
-CREATE TABLE maat_task_definitions ( id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, a_type VARCHAR(32) NOT NULL, a_name VARCHAR(256) NOT NULL, description VARCHAR(4096) NULL, assigned_commands VARCHAR(512) NOT NULL, mandatory BOOLEAN NULL, predefined BOOLEAN NULL,
+CREATE TABLE maat_task_definitions ( id BIGSERIAL, identifier VARCHAR(32) NOT NULL, a_type VARCHAR(32) NOT NULL, a_name VARCHAR(256) NOT NULL, description VARCHAR(4096) NULL, assigned_commands VARCHAR(512) NOT NULL, mandatory BOOLEAN NULL, predefined BOOLEAN NULL,
                                      CONSTRAINT maat_task_definitions_pk PRIMARY KEY (id),
                                      CONSTRAINT maat_task_def_identifier_uq UNIQUE (identifier) );
 
-CREATE TABLE maat_task_instances ( id BIGINT NOT NULL, task_definition_id BIGINT NOT NULL, customer_id BIGINT NOT NULL, a_comment VARCHAR(4096) NULL, executed_on TIMESTAMP(3) NULL, executed_by VARCHAR(32) NULL,
+CREATE TABLE maat_task_instances ( id BIGSERIAL, task_definition_id BIGINT NOT NULL, customer_id BIGINT NOT NULL, a_comment VARCHAR(4096) NULL, executed_on TIMESTAMP(3) NULL, executed_by VARCHAR(32) NULL,
                                    CONSTRAINT maat_task_instances_pk PRIMARY KEY (id),
                                    CONSTRAINT maat_task_instances_def_fk FOREIGN KEY (task_definition_id) REFERENCES maat_task_definitions (id) ON UPDATE RESTRICT,
                                    CONSTRAINT maat_task_instances_cust_fk FOREIGN KEY (customer_id) REFERENCES maat_customers (id) ON UPDATE RESTRICT );
 
-CREATE TABLE nun_catalogs ( id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, a_name VARCHAR(256) NOT NULL, description VARCHAR(4096) NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL, last_modified_by VARCHAR(32) NULL, last_modified_on TIMESTAMP(3) NULL,
+CREATE TABLE nun_catalogs ( id BIGSERIAL, identifier VARCHAR(32) NOT NULL, a_name VARCHAR(256) NOT NULL, description VARCHAR(4096) NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL, last_modified_by VARCHAR(32) NULL, last_modified_on TIMESTAMP(3) NULL,
                             CONSTRAINT nun_catalogs_pk PRIMARY KEY (id),
                             CONSTRAINT nun_catalogs_identifier_uq UNIQUE (identifier) );
 
-CREATE TABLE nun_fields ( id BIGINT NOT NULL, catalog_id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, data_type VARCHAR(256) NOT NULL, a_label VARCHAR(256) NOT NULL, a_hint VARCHAR(512) NULL, description VARCHAR(4096) NULL, mandatory BOOLEAN NULL, a_length BIGINT NULL, a_precision BIGINT NULL, min_value BIGINT NULL, max_value BIGINT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL,
+CREATE TABLE nun_fields ( id BIGSERIAL, catalog_id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, data_type VARCHAR(256) NOT NULL, a_label VARCHAR(256) NOT NULL, a_hint VARCHAR(512) NULL, description VARCHAR(4096) NULL, mandatory BOOLEAN NULL, a_length BIGINT NULL, a_precision BIGINT NULL, min_value BIGINT NULL, max_value BIGINT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL,
                           CONSTRAINT nun_fields_pk PRIMARY KEY (id),
                           CONSTRAINT nun_fields_uq UNIQUE (catalog_id, identifier),
                           CONSTRAINT nun_fields_catalogs_fk FOREIGN KEY (catalog_id) REFERENCES nun_catalogs (id) );
 
-CREATE TABLE nun_options ( id BIGINT NOT NULL, field_id BIGINT NOT NULL, a_label VARCHAR(256) NOT NULL, a_value BIGINT NOT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL,
+CREATE TABLE nun_options ( id BIGSERIAL, field_id BIGINT NOT NULL, a_label VARCHAR(256) NOT NULL, a_value BIGINT NOT NULL, created_by VARCHAR(32) NULL, created_on TIMESTAMP(3) NULL,
                            CONSTRAINT nun_options_pk PRIMARY KEY (id),
                            CONSTRAINT nun_options_uq UNIQUE (field_id, a_label),
                            CONSTRAINT nun_options_fields_fk FOREIGN KEY (field_id) REFERENCES nun_fields (id) );
 
-CREATE TABLE nun_field_values ( id BIGINT NOT NULL, entity_id BIGINT NOT NULL, field_id BIGINT NOT NULL, a_value VARCHAR(4096) NOT NULL,
+CREATE TABLE nun_field_values ( id BIGSERIAL, entity_id BIGINT NOT NULL, field_id BIGINT NOT NULL, a_value VARCHAR(4096) NOT NULL,
                                 CONSTRAINT nun_field_values_pk PRIMARY KEY (id),
                                 CONSTRAINT nun_field_values_uq UNIQUE (entity_id, field_id),
                                 CONSTRAINT nun_field_values_entities_fk FOREIGN KEY (entity_id) REFERENCES maat_customers (id),

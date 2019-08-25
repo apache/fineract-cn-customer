@@ -17,7 +17,7 @@
 -- under the License.
 --
 
-CREATE TABLE maat_identification_card_scans ( id BIGINT NOT NULL, identifier VARCHAR(32) NOT NULL, description VARCHAR(4096) NOT NULL, identification_card_id BIGINT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL, created_on TIMESTAMP(3) NOT NULL, created_by VARCHAR(32) NOT NULL,
+CREATE TABLE maat_identification_card_scans ( id BIGSERIAL, identifier VARCHAR(32) NOT NULL, description VARCHAR(4096) NOT NULL, identification_card_id BIGINT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL, created_on TIMESTAMP(3) NOT NULL, created_by VARCHAR(32) NOT NULL,
                                               CONSTRAINT maat_ident_card_scans_pk PRIMARY KEY (id),
                                               CONSTRAINT maat_ident_card_scans_ident_uq UNIQUE (identifier, identification_card_id),
                                               CONSTRAINT maat_ident_card_scans_fk FOREIGN KEY (identification_card_id) REFERENCES maat_identification_cards (id) );
