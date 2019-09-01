@@ -1,4 +1,4 @@
-# Apache Fineract CN Customer Management
+# Apache Fineract CN Customer Management [![Build Status](https://api.travis-ci.com/apache/fineract-cn-customer.svg?branch=develop)](https://travis-ci.com/apache/fineract-cn-customer)
 
 This service covers simple functionality around CRM and KYC.
 
