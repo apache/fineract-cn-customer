@@ -32,8 +32,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import org.apache.fineract.cn.mariadb.util.LocalDateConverter;
-import org.apache.fineract.cn.mariadb.util.LocalDateTimeConverter;
+import org.apache.fineract.cn.postgresql.util.LocalDateConverter;
+import org.apache.fineract.cn.postgresql.util.LocalDateTimeConverter;
 
 @Entity
 @Table(name = "maat_customers")

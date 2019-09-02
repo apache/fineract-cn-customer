@@ -17,6 +17,7 @@
 -- under the License.
 --
 
-ALTER TABLE maat_customers ADD application_date DATE NULL;
-
-UPDATE maat_customers set application_date = CURDATE() WHERE current_state <> 'PENDING';
+CREATE TABLE maat_identification_card_scans ( id BIGSERIAL, identifier VARCHAR(32) NOT NULL, description VARCHAR(4096) NOT NULL, identification_card_id BIGINT NOT NULL, content_type VARCHAR(256) NOT NULL, size BIGINT NOT NULL, image BYTEA NOT NULL, created_on TIMESTAMP(3) NOT NULL, created_by VARCHAR(32) NOT NULL,
+                                              CONSTRAINT maat_ident_card_scans_pk PRIMARY KEY (id),
+                                              CONSTRAINT maat_ident_card_scans_ident_uq UNIQUE (identifier, identification_card_id),
+                                              CONSTRAINT maat_ident_card_scans_fk FOREIGN KEY (identification_card_id) REFERENCES maat_identification_cards (id) );

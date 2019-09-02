@@ -18,13 +18,13 @@
  */
 package org.apache.fineract.cn.customer.internal.config;
 
-import org.apache.fineract.cn.mariadb.config.EnableMariaDB;
+import org.apache.fineract.cn.postgresql.config.EnablePostgreSQL;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableMariaDB
+@EnablePostgreSQL
 @ComponentScan({
     "org.apache.fineract.cn.customer.internal.service",
     "org.apache.fineract.cn.customer.internal.repository",

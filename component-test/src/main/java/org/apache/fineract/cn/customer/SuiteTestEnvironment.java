@@ -20,7 +20,7 @@ package org.apache.fineract.cn.customer;
 
 import org.apache.fineract.cn.test.env.TestEnvironment;
 import org.apache.fineract.cn.test.fixture.cassandra.CassandraInitializer;
-import org.apache.fineract.cn.test.fixture.mariadb.MariaDBInitializer;
+import org.apache.fineract.cn.test.fixture.postgresql.PostgreSQLInitializer;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.RunExternalResourceOnce;
@@ -33,11 +33,11 @@ public class SuiteTestEnvironment {
   static final String APP_NAME = "customer-v1";
   final static TestEnvironment testEnvironment = new TestEnvironment(APP_NAME);
   final static CassandraInitializer cassandraInitializer = new CassandraInitializer();
-  final static MariaDBInitializer mariaDBInitializer = new MariaDBInitializer();
+  final static PostgreSQLInitializer postgreSQLInitializer = new PostgreSQLInitializer();
 
   @ClassRule
   public static TestRule orderClassRules = RuleChain
       .outerRule(new RunExternalResourceOnce(testEnvironment))
       .around(new RunExternalResourceOnce(cassandraInitializer))
-      .around(new RunExternalResourceOnce(mariaDBInitializer));
+      .around(new RunExternalResourceOnce(postgreSQLInitializer));
 }

@@ -76,14 +76,9 @@ public class TestTaskDefinition extends AbstractCustomerTest {
     Assert.assertNotNull(savedTaskDefinition);
   }
 
-  @Test
+  @Test(expected = TaskNotFoundException.class)
   public void shouldNotFindTaskNotFound() throws Exception {
-    try {
-      this.customerManager.findTask(RandomStringUtils.randomAlphanumeric(8));
-      Assert.fail();
-    } catch (TaskNotFoundException ex) {
-      // do nothing, expected
-    }
+    this.customerManager.findTask(RandomStringUtils.randomAlphanumeric(8));
   }
 
   @Test

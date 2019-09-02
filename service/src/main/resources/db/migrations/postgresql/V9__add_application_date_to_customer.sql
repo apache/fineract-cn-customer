@@ -17,8 +17,6 @@
 -- under the License.
 --
 
-ALTER TABLE maat_customers ADD is_member BOOLEAN NULL;
+ALTER TABLE maat_customers ADD application_date DATE NULL;
 
-UPDATE maat_customers set is_member = TRUE;
-
-ALTER TABLE maat_customers MODIFY is_member BOOLEAN NOT NULL;
+UPDATE maat_customers set application_date = CURRENT_DATE WHERE current_state <> 'PENDING';

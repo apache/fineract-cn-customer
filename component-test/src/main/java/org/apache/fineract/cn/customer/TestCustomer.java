@@ -23,7 +23,6 @@ import org.apache.fineract.cn.customer.api.v1.client.CustomerAlreadyExistsExcept
 import org.apache.fineract.cn.customer.api.v1.client.CustomerNotFoundException;
 import org.apache.fineract.cn.customer.api.v1.client.CustomerValidationException;
 import org.apache.fineract.cn.customer.api.v1.client.DocumentValidationException;
-import org.apache.fineract.cn.customer.api.v1.client.PortraitNotFoundException;
 import org.apache.fineract.cn.customer.api.v1.domain.Address;
 import org.apache.fineract.cn.customer.api.v1.domain.Command;
 import org.apache.fineract.cn.customer.api.v1.domain.ContactDetail;

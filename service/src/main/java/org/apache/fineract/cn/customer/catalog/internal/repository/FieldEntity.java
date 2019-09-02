@@ -32,7 +32,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.apache.fineract.cn.mariadb.util.LocalDateTimeConverter;
+import org.apache.fineract.cn.postgresql.util.LocalDateTimeConverter;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "nun_fields")
@@ -52,7 +53,8 @@ public class FieldEntity {
   private String label;
   @Column(name = "a_hint", length = 512)
   private String hint;
-  @Column(name = "description", length = 4096)
+  @Length(max = 4096)
+  @JoinColumn(name = "description")
   @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<OptionEntity> options;
   private String description;
