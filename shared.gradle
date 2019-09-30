@@ -72,7 +72,7 @@ dependencies {
 }
 
 jar {
-    from sourceSets.main.allSource
+    from sourceSets.main.java
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
