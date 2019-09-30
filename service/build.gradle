@@ -54,7 +54,9 @@ dependencies {
             [group: 'org.apache.fineract.cn', name: 'cassandra', version: versions.frameworkcassandra],
             [group: 'org.apache.fineract.cn', name: 'postgresql', version: versions.frameworkpostgresql],
             [group: 'org.apache.fineract.cn', name: 'command', version: versions.frameworkcommand],
-            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator]
+            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator],
+            [group: 'io.netty', name: 'netty-all', version: '4.1.39.Final'],
+            [group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.1.39.Final']
     )
 }
 

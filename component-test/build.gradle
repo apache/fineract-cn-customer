@@ -41,6 +41,10 @@ plugins {
 apply from: '../shared.gradle'
 apply plugin: 'org.asciidoctor.convert'
 
+bootRepackage {
+    enabled = false
+}
+
 dependencies {
     compile(
             [group: 'org.apache.fineract.cn.customer', name: 'api', version: project.version],
