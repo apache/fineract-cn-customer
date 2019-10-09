@@ -1,6 +1,6 @@
-# Apache Fineract CN Customer Management [![Build Status](https://api.travis-ci.com/apache/fineract-cn-customer.svg?branch=develop)](https://travis-ci.com/apache/fineract-cn-customer)
+# Apache Fineract CN Customer Management [![Build Status](https://api.travis-ci.com/apache/fineract-cn-customer.svg?branch=develop)](https://travis-ci.com/apache/fineract-cn-customer) [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/apache/fineract-cn-customer)](https://hub.docker.com/r/apache/fineract-cn-customer/builds)
 
-This service covers simple functionality around CRM and KYC.
+This service covers simple functionality around CRM and KYC. [Read more](https://cwiki.apache.org/confluence/display/FINERACT/Fineract+CN+Project+Structure#FineractCNProjectStructure-customer).
 
 ## Versioning
 The version numbers follow the [Semantic Versioning](http://semver.org/) scheme.
