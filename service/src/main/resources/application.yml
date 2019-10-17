@@ -23,16 +23,13 @@ spring:
       enabled: false
     config:
       enabled: false
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/playground
-    username: postgres
-    password: postgres
 
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    homePageUrl: "http://${eureka.hostname}:2024/customer/v1/"
 
 server:
   port: 2024
