@@ -17,7 +17,7 @@
 
 buildscript {
     ext {
-        springBootVersion = '1.4.1.RELEASE'
+        springBootVersion = '2.2.6.RELEASE'
     }
 
     repositories {
@@ -25,15 +25,15 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.asciidoctor:asciidoctor-gradle-plugin:1.5.3")
+        classpath("org.asciidoctor:asciidoctor-gradle-plugin:1.5.7")
     }
 }
 
 plugins {
-    id "com.github.hierynomus.license" version "0.13.1"
-    id("org.nosphere.apache.rat") version "0.5.2"
-    id "com.jfrog.artifactory" version "4.9.5"
-    id "org.springframework.boot" version "1.4.3.RELEASE"
+    id 'com.github.hierynomus.license' version '0.15.0'
+    id 'org.nosphere.apache.rat' version '0.6.0'
+    id 'com.jfrog.artifactory' version '4.15.1'
+    id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'maven-publish'
     id 'java'
 }
@@ -41,7 +41,7 @@ plugins {
 apply from: '../shared.gradle'
 apply plugin: 'org.asciidoctor.convert'
 
-bootRepackage {
+bootJar {
     enabled = false
 }
 

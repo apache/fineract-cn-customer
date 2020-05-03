@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.fineract.cn.api.annotation.ThrowsException;
 import org.apache.fineract.cn.api.annotation.ThrowsExceptions;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
