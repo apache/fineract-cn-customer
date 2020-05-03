@@ -66,6 +66,10 @@ asciidoctor {
                 'snippets': file('build/doc/generated-snippets/')
 }
 
+jar {
+    enabled = true
+}
+
 publishing {
     publications {
         componentTest(MavenPublication) {

@@ -63,7 +63,7 @@ dependencies {
     compile(
             [group: 'com.google.code.findbugs', name: 'jsr305'],
             [group: 'org.apache.fineract.cn', name: 'postgresql', version: versions.frameworkpostgresql],
-            [group: 'postgresql', name: 'postgresql', version: '42.2.12']
+            [group: 'org.postgresql', name: 'postgresql', version: '42.2.12']
     )
 
     testCompile(
