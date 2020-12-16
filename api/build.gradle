@@ -25,7 +25,7 @@ plugins {
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'org.nosphere.apache.rat' version '0.6.0'
     id 'com.jfrog.artifactory' version '4.15.1'
-    id 'org.springframework.boot' version '2.2.6.RELEASE'
+    id 'org.springframework.boot' version '2.4.1'
     id 'maven-publish'
     id 'java'
 }
@@ -35,10 +35,11 @@ apply from: '../shared.gradle'
 dependencies {
     compile(
             [group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign'],
+            [group: 'org.springframework', name: 'spring-jms', version: '5.3.9'],
             [group: 'org.apache.fineract.cn', name: 'api', version: versions.frameworkapi],
-            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator],
-            [group: 'io.github.openfeign.form', name: 'feign-form', version: '2.1.0'],
-            [group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '2.1.0']
+            [group: 'org.hibernate.validator', name: 'hibernate-validator', version: versions.hibernatevalidator],
+            [group: 'io.github.openfeign.form', name: 'feign-form-spring', version: '3.8.0'],
+            [group: 'io.github.openfeign', name: 'feign-gson', version: '11.6']
     )
 
     testCompile(
