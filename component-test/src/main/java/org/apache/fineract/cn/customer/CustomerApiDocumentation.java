@@ -1385,7 +1385,7 @@ public class CustomerApiDocumentation extends AbstractCustomerTest {
 
     final MockMultipartFile portrait = new MockMultipartFile("portrait", "portrait.png", MediaType.IMAGE_PNG_VALUE, "i don't care".getBytes());
 
-    this.mockMvc.perform(MockMvcRequestBuilders.fileUpload("/customers/" + customer.getIdentifier() + "/portrait")
+    this.mockMvc.perform(MockMvcRequestBuilders.multipart("/customers/" + customer.getIdentifier() + "/portrait")
             .file(portrait))
             .andExpect(status().isAccepted())
             .andDo(document("document-upload-portrait"));
@@ -1447,7 +1447,7 @@ public class CustomerApiDocumentation extends AbstractCustomerTest {
 
     final MockMultipartFile secondFile = new MockMultipartFile("portrait", "test.png", MediaType.IMAGE_PNG_VALUE, "i care".getBytes());
 
-    this.mockMvc.perform(MockMvcRequestBuilders.fileUpload("/customers/" + customer.getIdentifier() + "/portrait")
+    this.mockMvc.perform(MockMvcRequestBuilders.multipart("/customers/" + customer.getIdentifier() + "/portrait")
             .file(secondFile))
             .andExpect(status().isAccepted())
             .andDo(document("document-replace-portrait"));

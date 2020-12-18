@@ -39,7 +39,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableAutoConfiguration
@@ -59,7 +59,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
     CustomerServiceConfiguration.class
 })
 @EnableConfigurationProperties({UploadProperties.class})
-public class CustomerRestConfiguration extends WebMvcConfigurerAdapter {
+public class CustomerRestConfiguration implements WebMvcConfigurer {
 
   public CustomerRestConfiguration() {
     super();
@@ -68,10 +68,5 @@ public class CustomerRestConfiguration extends WebMvcConfigurerAdapter {
   @Bean(name = ServiceConstants.LOGGER_NAME)
   public Logger logger(final ApplicationName applicationName) {
     return LoggerFactory.getLogger(applicationName.getServiceName());
-  }
-
-  @Override
-  public void configurePathMatch(final PathMatchConfigurer configurer) {
-    configurer.setUseSuffixPatternMatch(Boolean.FALSE);
   }
 }

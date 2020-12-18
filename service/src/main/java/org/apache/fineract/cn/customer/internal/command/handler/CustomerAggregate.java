@@ -138,7 +138,7 @@ public class CustomerAggregate {
     final CustomerEntity savedCustomerEntity = this.customerRepository.save(customerEntity);
 
     if (customer.getContactDetails() != null) {
-      this.contactDetailRepository.save(
+      this.contactDetailRepository.saveAll(
           customer.getContactDetails()
               .stream()
               .map(contact -> {
@@ -352,10 +352,10 @@ public class CustomerAggregate {
     customerEntity.setLastModifiedOn(LocalDateTime.now(Clock.systemUTC()));
 
     final List<ContactDetailEntity> oldContactDetails = this.contactDetailRepository.findByCustomer(customerEntity);
-    this.contactDetailRepository.delete(oldContactDetails);
+    this.contactDetailRepository.deleteAll(oldContactDetails);
 
     if (updateContactDetailsCommand.contactDetails() != null) {
-      this.contactDetailRepository.save(
+      this.contactDetailRepository.saveAll(
           updateContactDetailsCommand.contactDetails()
               .stream()
               .map(contact -> {
@@ -430,7 +430,7 @@ public class CustomerAggregate {
 
       final List<IdentificationCardScanEntity> cardScanEntities = this.identificationCardScanRepository.findByIdentificationCard(identificationCardEntity);
 
-      this.identificationCardScanRepository.delete(cardScanEntities);
+      this.identificationCardScanRepository.deleteAll(cardScanEntities);
 
       this.identificationCardRepository.delete(identificationCardEntity);
 
@@ -538,7 +538,7 @@ public class CustomerAggregate {
   }
 
   private void setCustomValues(final Customer customer, final CustomerEntity savedCustomerEntity) {
-    this.fieldValueRepository.save(
+    this.fieldValueRepository.saveAll(
         customer.getCustomValues()
             .stream()
             .map(value -> {

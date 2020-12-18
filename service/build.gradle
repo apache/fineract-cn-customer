@@ -17,7 +17,7 @@
 
 buildscript {
     ext {
-        springBootVersion = '2.2.6.RELEASE'
+        springBootVersion = '2.4.1'
     }
     repositories {
         jcenter()
@@ -28,7 +28,7 @@ plugins {
     id 'com.github.hierynomus.license' version '0.15.0'
     id 'org.nosphere.apache.rat' version '0.6.0'
     id 'com.jfrog.artifactory' version '4.15.1'
-    id 'org.springframework.boot' version '2.2.6.RELEASE'
+    id 'org.springframework.boot' version '2.4.1'
     id 'maven-publish'
     id 'java'
     id 'idea'
@@ -54,9 +54,9 @@ dependencies {
             [group: 'org.apache.fineract.cn', name: 'cassandra', version: versions.frameworkcassandra],
             [group: 'org.apache.fineract.cn', name: 'postgresql', version: versions.frameworkpostgresql],
             [group: 'org.apache.fineract.cn', name: 'command', version: versions.frameworkcommand],
-            [group: 'org.hibernate', name: 'hibernate-validator', version: versions.validator],
-            [group: 'io.netty', name: 'netty-all', version: '4.1.39.Final'],
-            [group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.1.39.Final']
+            [group: 'org.hibernate.validator', name: 'hibernate-validator', version: versions.hibernatevalidator],
+            [group: 'io.netty', name: 'netty-all', version: '4.1.55.Final'],
+            [group: 'io.netty', name: 'netty-transport-native-epoll', version: '4.1.55.Final']
     )
 }
 
