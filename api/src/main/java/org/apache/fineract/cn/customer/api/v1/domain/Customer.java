@@ -18,6 +18,8 @@
  */
 package org.apache.fineract.cn.customer.api.v1.domain;
 
+import org.apache.fineract.cn.customer.api.v1.client.validation.NotBlankBasedOnConfig;
+import org.apache.fineract.cn.customer.api.v1.client.validation.NotNullBasedOnConfig;
 import org.apache.fineract.cn.customer.catalog.api.v1.domain.Value;
 import java.util.List;
 import javax.validation.Valid;
@@ -41,22 +43,22 @@ public final class Customer {
 
   @NotBlank
   private String identifier;
-  @NotNull
+  @NotNullBasedOnConfig
   private Type type;
-  @NotBlank
+  @NotBlankBasedOnConfig
   private String givenName;
   private String middleName;
-  @NotBlank
+  @NotBlankBasedOnConfig
   private String surname;
-  @NotNull
+  @NotNullBasedOnConfig
   private DateOfBirth dateOfBirth;
-  @NotNull
+  @NotNullBasedOnConfig
   private Boolean member;
   private String accountBeneficiary;
   private String referenceCustomer;
   private String assignedOffice;
   private String assignedEmployee;
-  @NotNull
+  @NotNullBasedOnConfig
   @Valid
   private Address address;
   @Valid
