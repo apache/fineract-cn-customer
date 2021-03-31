@@ -129,12 +129,12 @@ public class CustomerAggregate {
   @EventEmitter(selectorName = CustomerEventConstants.SELECTOR_NAME, selectorValue = CustomerEventConstants.POST_CUSTOMER)
   public String createCustomer(final CreateCustomerCommand createCustomerCommand) {
     final Customer customer = createCustomerCommand.customer();
-
-    final AddressEntity savedAddress = this.addressRepository.save(AddressMapper.map(customer.getAddress()));
-
     final CustomerEntity customerEntity = CustomerMapper.map(customer);
     customerEntity.setCurrentState(Customer.State.PENDING.name());
-    customerEntity.setAddress(savedAddress);
+    if(customer.getAddress() !=null) {
+      final AddressEntity savedAddress = this.addressRepository.save(AddressMapper.map(customer.getAddress()));
+      customerEntity.setAddress(savedAddress);
+    }
     final CustomerEntity savedCustomerEntity = this.customerRepository.save(customerEntity);
 
     if (customer.getContactDetails() != null) {

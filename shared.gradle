@@ -27,6 +27,7 @@ ext.versions = [
         frameworkcommand : '0.1.0-BUILD-SNAPSHOT',
         frameworktest: '0.1.0-BUILD-SNAPSHOT',
         frameworkanubis: '0.1.0-BUILD-SNAPSHOT',
+        frameworkdeposit: '0.1.0-BUILD-SNAPSHOT',
         validator  : '5.3.0.Final'
 ]
 

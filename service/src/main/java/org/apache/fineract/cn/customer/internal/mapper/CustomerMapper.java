@@ -40,7 +40,9 @@ public final class CustomerMapper {
     customerEntity.setGivenName(customer.getGivenName());
     customerEntity.setMiddleName(customer.getMiddleName());
     customerEntity.setSurname(customer.getSurname());
-    customerEntity.setDateOfBirth(Date.valueOf(customer.getDateOfBirth().toLocalDate()));
+    if(customer.getDateOfBirth() !=null) {
+      customerEntity.setDateOfBirth(Date.valueOf(customer.getDateOfBirth().toLocalDate()));
+    }
     customerEntity.setMember(customer.getMember());
     customerEntity.setAccountBeneficiary(customer.getAccountBeneficiary());
     customerEntity.setReferenceCustomer(customer.getReferenceCustomer());
@@ -68,7 +70,8 @@ public final class CustomerMapper {
     customer.setGivenName(customerEntity.getGivenName());
     customer.setMiddleName(customerEntity.getMiddleName());
     customer.setSurname(customerEntity.getSurname());
-    customer.setDateOfBirth(DateOfBirth.fromLocalDate(customerEntity.getDateOfBirth().toLocalDate()));
+    if(customerEntity.getDateOfBirth() != null)
+      customer.setDateOfBirth(DateOfBirth.fromLocalDate(customerEntity.getDateOfBirth().toLocalDate()));
     customer.setMember(customerEntity.getMember());
     customer.setAccountBeneficiary(customerEntity.getAccountBeneficiary());
     customer.setReferenceCustomer(customerEntity.getReferenceCustomer());
