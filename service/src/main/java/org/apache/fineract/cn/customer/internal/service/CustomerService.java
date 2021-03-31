@@ -90,7 +90,8 @@ public class CustomerService {
     return customerRepository.findByIdentifier(identifier)
         .map(customerEntity -> {
           final Customer customer = CustomerMapper.map(customerEntity);
-          customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
+          if(customerEntity !=null && customerEntity.getAddress() != null)
+            customer.setAddress(AddressMapper.map(customerEntity.getAddress()));
 
           final List<ContactDetailEntity> contactDetailEntities = this.contactDetailRepository.findByCustomer(customerEntity);
           if (contactDetailEntities != null) {

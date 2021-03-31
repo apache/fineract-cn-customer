@@ -48,6 +48,7 @@ dependencies {
             [group: 'org.springframework.boot', name: 'spring-boot-starter-jetty'],
             [group: 'org.apache.fineract.cn.customer', name: 'api', version: project.version],
             [group: 'org.apache.fineract.cn.anubis', name: 'library', version: versions.frameworkanubis],
+            [group: 'org.apache.fineract.cn.deposit-account-management', name: 'api', version: project.version],
             [group: 'com.google.code.gson', name: 'gson'],
             [group: 'org.apache.fineract.cn', name: 'lang', version: versions.frameworklang],
             [group: 'org.apache.fineract.cn', name: 'async', version: versions.frameworkasync],

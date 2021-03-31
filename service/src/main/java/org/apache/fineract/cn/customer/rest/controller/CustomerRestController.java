@@ -19,15 +19,7 @@
 package org.apache.fineract.cn.customer.rest.controller;
 
 import org.apache.fineract.cn.customer.PermittableGroupIds;
-import org.apache.fineract.cn.customer.api.v1.domain.Address;
-import org.apache.fineract.cn.customer.api.v1.domain.Command;
-import org.apache.fineract.cn.customer.api.v1.domain.ContactDetail;
-import org.apache.fineract.cn.customer.api.v1.domain.Customer;
-import org.apache.fineract.cn.customer.api.v1.domain.CustomerPage;
-import org.apache.fineract.cn.customer.api.v1.domain.IdentificationCard;
-import org.apache.fineract.cn.customer.api.v1.domain.IdentificationCardScan;
-import org.apache.fineract.cn.customer.api.v1.domain.ProcessStep;
-import org.apache.fineract.cn.customer.api.v1.domain.TaskDefinition;
+import org.apache.fineract.cn.customer.api.v1.domain.*;
 import org.apache.fineract.cn.customer.catalog.internal.service.FieldValueValidator;
 import org.apache.fineract.cn.customer.ServiceConstants;
 import org.apache.fineract.cn.customer.internal.command.ActivateCustomerCommand;
@@ -64,6 +56,8 @@ import org.apache.fineract.cn.anubis.annotation.AcceptedTokenType;
 import org.apache.fineract.cn.anubis.annotation.Permittable;
 import org.apache.fineract.cn.api.util.UserContextHolder;
 import org.apache.fineract.cn.command.gateway.CommandGateway;
+import org.apache.fineract.cn.deposit.api.v1.client.DepositAccountManager;
+import org.apache.fineract.cn.deposit.api.v1.instance.domain.ProductInstance;
 import org.apache.fineract.cn.lang.ServiceException;
 import org.apache.fineract.cn.lang.validation.constraints.ValidIdentifier;
 import org.slf4j.Logger;
@@ -94,6 +88,7 @@ public class CustomerRestController {
   private final FieldValueValidator fieldValueValidator;
   private final TaskService taskService;
   private final Environment environment;
+  private final DepositAccountManager depositAccountManager;
 
   @Autowired
   public CustomerRestController(@Qualifier(ServiceConstants.LOGGER_NAME) final Logger logger,
@@ -101,7 +96,8 @@ public class CustomerRestController {
                                 final CustomerService customerService,
                                 final FieldValueValidator fieldValueValidator,
                                 final TaskService taskService,
-                                final Environment environment) {
+                                final Environment environment,
+                                final DepositAccountManager depositAccountManager) {
     super();
     this.logger = logger;
     this.commandGateway = commandGateway;
@@ -109,6 +105,7 @@ public class CustomerRestController {
     this.fieldValueValidator = fieldValueValidator;
     this.taskService = taskService;
     this.environment = environment;
+    this.depositAccountManager = depositAccountManager;
   }
 
   @Permittable(value = AcceptedTokenType.SYSTEM)
@@ -144,6 +141,80 @@ public class CustomerRestController {
     }
 
     this.commandGateway.process(new CreateCustomerCommand(customer));
+
+    return ResponseEntity.accepted().build();
+  }
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/person",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> createPerson(@RequestBody @Valid final NonPerson nonPerson) throws InterruptedException {
+    Customer customer = new Customer();
+    customer.setIdentifier(nonPerson.getAccountNumber());
+    customer.setType(Customer.Type.PERSON.name());
+    customer.setCurrentState(Customer.State.PENDING.name());
+    customer.setMember(false);
+    if (this.customerService.customerExists(customer.getIdentifier())) {
+      throw ServiceException.conflict("Customer {0} already exists.", customer.getIdentifier());
+    }
+
+    this.commandGateway.process(new CreateCustomerCommand(customer));
+
+    ProductInstance productInstance = new ProductInstance();
+    productInstance.setProductIdentifier(nonPerson.getProductIdentifier());
+    productInstance.setCustomerIdentifier(customer.getIdentifier());
+    productInstance.setAccountIdentifier(customer.getIdentifier());
+    //create account
+    depositAccountManager.create(productInstance);
+
+    //activate
+    if(nonPerson.isActive()){
+      this.commandGateway.process(new ActivateCustomerCommand(nonPerson.getAccountNumber(), "ACTIVATE"));
+      this.depositAccountManager.postProductInstanceCommand(customer.getIdentifier(), "ACTIVATE");
+    }
+
+    return ResponseEntity.accepted().build();
+  }
+
+
+  @Permittable(value = AcceptedTokenType.TENANT, groupId = PermittableGroupIds.CUSTOMER)
+  @RequestMapping(
+          value = "/nonperson",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  public
+  @ResponseBody
+  ResponseEntity<Void> createNonPerson(@RequestBody @Valid final NonPerson nonPerson) throws InterruptedException {
+    Customer customer = new Customer();
+    customer.setIdentifier(nonPerson.getAccountNumber());
+    customer.setType(Customer.Type.BUSINESS.name());
+    customer.setCurrentState(Customer.State.PENDING.name());
+    customer.setMember(false);
+    if (this.customerService.customerExists(customer.getIdentifier())) {
+      throw ServiceException.conflict("Customer {0} already exists.", customer.getIdentifier());
+    }
+
+    this.commandGateway.process(new CreateCustomerCommand(customer));
+
+    ProductInstance productInstance = new ProductInstance();
+    productInstance.setProductIdentifier(nonPerson.getProductIdentifier());
+    productInstance.setCustomerIdentifier(customer.getIdentifier());
+    productInstance.setAccountIdentifier(customer.getIdentifier());
+    //create account
+    depositAccountManager.create(productInstance);
+    //activate
+    if(nonPerson.isActive()){
+      this.commandGateway.process(new ActivateCustomerCommand(customer.getIdentifier(), "ACTIVATE"));
+      this.depositAccountManager.postProductInstanceCommand(customer.getIdentifier(), "ACTIVATE");
+    }
     return ResponseEntity.accepted().build();
   }
 
