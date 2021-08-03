@@ -73,3 +73,6 @@ flyway:
 upload:
   image:
     max-size: 524288
+
+config:
+  bypassNotNull: true
