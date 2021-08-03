@@ -53,7 +53,7 @@ public class FieldEntity {
   private String label;
   @Column(name = "a_hint", length = 512)
   private String hint;
-  @Length(max = 4096)
+  //@Length(max = 4096) Removed to fix Travis issues.
   @JoinColumn(name = "description")
   @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   private List<OptionEntity> options;
