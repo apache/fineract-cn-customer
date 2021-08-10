@@ -136,7 +136,7 @@ public class TaskAggregate {
     final List<TaskDefinitionEntity> predefinedTasks =
         this.taskDefinitionRepository.findByAssignedCommandsContaining(action.name());
     if (predefinedTasks != null && predefinedTasks.size() > 0) {
-      this.taskInstanceRepository.save(
+      this.taskInstanceRepository.saveAll(
           predefinedTasks
               .stream()
               .filter(TaskDefinitionEntity::isPredefined)
