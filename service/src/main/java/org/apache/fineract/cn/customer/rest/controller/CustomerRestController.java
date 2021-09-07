@@ -69,6 +69,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -152,13 +153,18 @@ public class CustomerRestController {
           produces = MediaType.APPLICATION_JSON_VALUE,
           consumes = MediaType.APPLICATION_JSON_VALUE
   )
+  @Transactional
   public
   @ResponseBody
   ResponseEntity<Void> createPerson(@RequestBody @Valid final NonPerson nonPerson) throws InterruptedException {
     Customer customer = new Customer();
     customer.setIdentifier(nonPerson.getAccountNumber());
     customer.setType(Customer.Type.PERSON.name());
-    customer.setCurrentState(Customer.State.PENDING.name());
+    if(nonPerson.isActive()) {
+      customer.setCurrentState(Customer.State.ACTIVE.name());
+    } else {
+      customer.setCurrentState(Customer.State.PENDING.name());
+    }
     customer.setMember(false);
     if (this.customerService.customerExists(customer.getIdentifier())) {
       throw ServiceException.conflict("Customer {0} already exists.", customer.getIdentifier());
@@ -170,14 +176,11 @@ public class CustomerRestController {
     productInstance.setProductIdentifier(nonPerson.getProductIdentifier());
     productInstance.setCustomerIdentifier(customer.getIdentifier());
     productInstance.setAccountIdentifier(customer.getIdentifier());
+    if(nonPerson.isActive()) {
+      productInstance.setState(Customer.State.ACTIVE.name());
+    }
     //create account
     depositAccountManager.create(productInstance);
-
-    //activate
-    if(nonPerson.isActive()){
-      this.commandGateway.process(new ActivateCustomerCommand(nonPerson.getAccountNumber(), "ACTIVATE"));
-      this.depositAccountManager.postProductInstanceCommand(customer.getIdentifier(), "ACTIVATE");
-    }
 
     return ResponseEntity.accepted().build();
   }
@@ -196,7 +199,11 @@ public class CustomerRestController {
     Customer customer = new Customer();
     customer.setIdentifier(nonPerson.getAccountNumber());
     customer.setType(Customer.Type.BUSINESS.name());
-    customer.setCurrentState(Customer.State.PENDING.name());
+    if(nonPerson.isActive()) {
+      customer.setCurrentState(Customer.State.ACTIVE.name());
+    } else {
+      customer.setCurrentState(Customer.State.PENDING.name());
+    }
     customer.setMember(false);
     if (this.customerService.customerExists(customer.getIdentifier())) {
       throw ServiceException.conflict("Customer {0} already exists.", customer.getIdentifier());
@@ -208,13 +215,12 @@ public class CustomerRestController {
     productInstance.setProductIdentifier(nonPerson.getProductIdentifier());
     productInstance.setCustomerIdentifier(customer.getIdentifier());
     productInstance.setAccountIdentifier(customer.getIdentifier());
+    if(nonPerson.isActive()) {
+      productInstance.setState(Customer.State.ACTIVE.name());
+    }
     //create account
     depositAccountManager.create(productInstance);
-    //activate
-    if(nonPerson.isActive()){
-      this.commandGateway.process(new ActivateCustomerCommand(customer.getIdentifier(), "ACTIVATE"));
-      this.depositAccountManager.postProductInstanceCommand(customer.getIdentifier(), "ACTIVATE");
-    }
+
     return ResponseEntity.accepted().build();
   }
 

@@ -18,6 +18,7 @@
  */
 package org.apache.fineract.cn.customer.internal.command.handler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.fineract.cn.customer.api.v1.CustomerEventConstants;
 import org.apache.fineract.cn.customer.api.v1.domain.Command;
 import org.apache.fineract.cn.customer.api.v1.domain.Customer;
@@ -130,7 +131,8 @@ public class CustomerAggregate {
   public String createCustomer(final CreateCustomerCommand createCustomerCommand) {
     final Customer customer = createCustomerCommand.customer();
     final CustomerEntity customerEntity = CustomerMapper.map(customer);
-    customerEntity.setCurrentState(Customer.State.PENDING.name());
+    if(StringUtils.isBlank(customerEntity.getCurrentState()))
+      customerEntity.setCurrentState(Customer.State.PENDING.name());
     if(customer.getAddress() !=null) {
       final AddressEntity savedAddress = this.addressRepository.save(AddressMapper.map(customer.getAddress()));
       customerEntity.setAddress(savedAddress);
