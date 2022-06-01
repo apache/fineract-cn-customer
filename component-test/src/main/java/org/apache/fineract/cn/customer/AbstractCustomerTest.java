@@ -58,7 +58,6 @@ public class AbstractCustomerTest extends SuiteTestEnvironment {
   @Configuration
   @EnableEventRecording
   @EnableFeignClients(basePackages = {"org.apache.fineract.cn.customer.api.v1.client"})
-  @RibbonClient(name = APP_NAME)
   @ComponentScan(
       basePackages = {
           "org.apache.fineract.cn.customer.listener"

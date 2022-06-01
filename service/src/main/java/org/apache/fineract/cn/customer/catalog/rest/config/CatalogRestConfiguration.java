@@ -34,7 +34,6 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @EnableAutoConfiguration
-@EnableDiscoveryClient
 @EnableAsync
 @EnableTenantContext
 @EnableCassandra

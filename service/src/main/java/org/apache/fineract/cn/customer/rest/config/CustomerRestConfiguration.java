@@ -45,7 +45,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Configuration
 @EnableAutoConfiguration
-@EnableDiscoveryClient
 @EnableAsync
 @EnableTenantContext
 @EnableCassandra
