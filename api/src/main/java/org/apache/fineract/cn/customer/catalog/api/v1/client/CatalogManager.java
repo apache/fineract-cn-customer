@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @SuppressWarnings("unused")
-@FeignClient(name="customer-v1", path="/customer/v1", configuration=CustomFeignClientsConfiguration.class)
+@FeignClient(path="/customer/v1", url = "http://${kubernetes.customer.service.name}:${kubernetes.customer.server.port}",configuration=CustomFeignClientsConfiguration.class)
 public interface CatalogManager {
 
   @RequestMapping(

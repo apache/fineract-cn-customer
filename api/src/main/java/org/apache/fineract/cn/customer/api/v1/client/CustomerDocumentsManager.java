@@ -36,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * @author Myrle Krantz
  */
-@FeignClient(name="customer-v1", path="/customer/v1", configuration= CustomerFeignClientConfig.class)
+@FeignClient(path="/customer/v1", url="http://${kubernetes.customer.service.name}:${kubernetes.customer.server.port}", configuration= CustomerFeignClientConfig.class)
 public interface CustomerDocumentsManager {
 
   @RequestMapping(

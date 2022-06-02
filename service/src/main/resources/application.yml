@@ -18,18 +18,11 @@
 #
 
 spring:
-  cloud:
-    discovery:
-      enabled: false
-    config:
-      enabled: false
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    homePageUrl: "http://${eureka.hostname}:2024/customer/v1/"
+ cloud:
+   discovery:
+     enabled: false
+   config:
+     enabled: false
 
 server:
   port: 2024
@@ -76,3 +69,19 @@ upload:
 
 config:
   bypassNotNull: true
+
+kubernetes:
+  customer:
+    service:
+      name: customer-service
+    server:
+      port: 2024
+  deposit:
+    service:
+      name: deposit-service
+    server:
+      port: 2027
+
+ribbon:
+  eureka:
+    enabled: false

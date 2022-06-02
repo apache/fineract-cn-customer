@@ -71,7 +71,6 @@ public class TestCatalog {
   @EnableEventRecording
   @EnableFeignClients(basePackages = {"org.apache.fineract.cn.customer.api.v1.client",
       "org.apache.fineract.cn.customer.catalog.api.v1.client"})
-  @RibbonClient(name = APP_NAME)
   @ComponentScan(
       basePackages = {
           "org.apache.fineract.cn.customer.listener",
