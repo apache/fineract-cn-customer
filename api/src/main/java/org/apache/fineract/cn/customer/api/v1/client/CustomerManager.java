@@ -19,15 +19,8 @@
 package org.apache.fineract.cn.customer.api.v1.client;
 
 import org.apache.fineract.cn.customer.api.v1.config.CustomerFeignClientConfig;
-import org.apache.fineract.cn.customer.api.v1.domain.Address;
-import org.apache.fineract.cn.customer.api.v1.domain.Command;
-import org.apache.fineract.cn.customer.api.v1.domain.ContactDetail;
-import org.apache.fineract.cn.customer.api.v1.domain.Customer;
-import org.apache.fineract.cn.customer.api.v1.domain.CustomerPage;
-import org.apache.fineract.cn.customer.api.v1.domain.IdentificationCard;
-import org.apache.fineract.cn.customer.api.v1.domain.IdentificationCardScan;
-import org.apache.fineract.cn.customer.api.v1.domain.ProcessStep;
-import org.apache.fineract.cn.customer.api.v1.domain.TaskDefinition;
+import org.apache.fineract.cn.customer.api.v1.domain.*;
+
 import java.util.List;
 import javax.validation.constraints.Size;
 import org.apache.fineract.cn.api.annotation.ThrowsException;
@@ -58,6 +51,30 @@ public interface CustomerManager {
       @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CustomerValidationException.class)
   })
   void createCustomer(@RequestBody final Customer customer);
+
+  @RequestMapping(
+          value = "/person",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.CONFLICT, exception = CustomerAlreadyExistsException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CustomerValidationException.class)
+  })
+  void createPerson(@RequestBody final NonPerson nonPerson);
+
+  @RequestMapping(
+          value = "/nonperson",
+          method = RequestMethod.POST,
+          produces = MediaType.APPLICATION_JSON_VALUE,
+          consumes = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ThrowsExceptions({
+          @ThrowsException(status = HttpStatus.CONFLICT, exception = CustomerAlreadyExistsException.class),
+          @ThrowsException(status = HttpStatus.BAD_REQUEST, exception = CustomerValidationException.class)
+  })
+  void createNonPerson(@RequestBody final NonPerson nonPerson);
 
   @RequestMapping(
       value = "/customers",
